@@ -1,0 +1,13 @@
+{% load i18n %}{% autoescape off %}
+{% blocktranslate %}This is an account activation email for your user account at {{ site_name }}.{% endblocktranslate %}
+
+{% translate "Please go to the following page:" %}
+{% block reset_link %}
+{{ protocol }}://{{ domain }}{% url 'accounts:activate' uidb64=uid token=token %}
+{% endblock %}
+
+{% translate "Thanks for using our site!" %}
+
+{% blocktranslate %}The {{ site_name }} team{% endblocktranslate %}
+
+{% endautoescape %}

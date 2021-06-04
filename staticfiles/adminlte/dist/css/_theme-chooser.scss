@@ -1,0 +1,75 @@
+$colors: (
+  "black": #221f1e,
+  "blue": #00abeb,
+  "red": #d3161c,
+  "yellow": #fbc628,
+  "orange": #f78319,
+  "purple": #632b90,
+  "green": #00a24f,
+  "gray": #b6b7bb,
+  "brown": #5d3712,
+  "pink": #e44587,
+);
+.colorpicker {
+  margin: 0 -5px;
+  input[type="radio"] {
+    display: none;
+    &:checked + label {
+      span {
+        transform: scale(1.25);
+        position: relative;
+        &:before,
+        &:after {
+          content: "";
+          display: block;
+          background: white;
+          position: absolute;
+        }
+        &:before {
+          height: 6px;
+          width: 2px;
+          transform: rotate(-45deg);
+          left: 6px;
+          top: 9px;
+        }
+        &:after {
+          height: 11px;
+          width: 2px;
+          transform: rotate(45deg);
+          left: 11px;
+          top: 5px;
+        }
+      }
+      @each $name, $value in $colors {
+        .#{$name} {
+          border: 2px solid darken($value, 15%);
+        }
+      } // !@each
+    } // !&:checked + label
+  }
+
+  label {
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    margin: 5px;
+    cursor: pointer;
+    &:hover {
+      span {
+        transform: scale(1.25);
+      }
+    }
+    span {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      transition: transform 0.2s ease-in-out;
+      @each $name, $value in $colors {
+        &.#{$name} {
+          background: $value;
+        }
+      }
+    }
+  }
+}

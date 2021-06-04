@@ -1,0 +1,11 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% block head_title %}{% trans "Sign In" %}{% endblock %}
+{% block inner %}
+
+<p>{% translate "Thanks for spending some quality time with the Web site today." %}</p>
+
+<p><a href="{% url 'accounts:login' %}">{% translate 'Log in again' %}</a></p>
+
+{% endblock %}

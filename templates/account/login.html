@@ -1,0 +1,16 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% block head_title %}{% trans "Sign In" %}{% endblock %}
+{% block inner %}
+<h1>{% trans "Sign In" %}</h1>
+<form class="login" method="POST" action="{% url 'accounts:login' %}">
+  {% csrf_token %}
+  {{ form|crispy }}
+
+  <a class="button secondaryAction" href="{% url 'accounts:password_reset' %}">{% trans "Forgot Password?" %}</a>
+  <button class="primaryAction btn btn-primary" type="submit">{% trans "Sign In" %}</button>
+</form>
+    <p><a href="{% url 'accounts:signup' %}">Sign Up</a>.</p>
+{% endblock %}
+

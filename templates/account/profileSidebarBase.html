@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}{% block head_title %}{% endblock head_title %}{% endblock title %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-4">
+            <ul class="list-group">
+                <a href="{% url 'adList' %}">
+                    <li class="list-group-item">My Ads</li>
+                </a>
+                <a href="{% url 'accounts:detail' %}">
+                    <li class="list-group-item">Profile</li>
+                </a>
+                <a href="{% url 'accounts:profile_update' %}">
+                    <li class="list-group-item">Update Profile</li>
+                </a>
+                <a href="{% url 'accounts:logout' %}">
+                    <li class="list-group-item">Sign out</li>
+                </a>
+            </ul>
+        </div>
+        <div class="col-md-8">
+            {% block profilepagemaincontent %}
+         <p>Profile section middle</p>
+      {% endblock profilepagemaincontent %}
+        </div>
+    </div>
+
+{% endblock %}

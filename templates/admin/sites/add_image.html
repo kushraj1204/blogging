@@ -1,0 +1,117 @@
+<?= $this->extend('Admin/admin_layout') ?>
+<?= $this->section('content') ?>
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1><?php echo !empty($image['id']) ? 'Edit' : 'Add'; ?> Image</h1>
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6 pull-left">
+                    <div class="row breadcrumb ">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="<?php echo base_url(route_to('admin_dashboard')); ?>">Home</a>
+                            </li>
+                            <li class="breadcrumb-item active"><?php echo !empty($image['id']) ? 'Edit' : 'Add'; ?>
+                                Image
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="row float-sm-right">
+                        <a href="<?php echo base_url(route_to('site_gallery', $site['id'])); ?>" class="btn btn-default"><i
+                                    class="fa fa-angle-left"></i> Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="help-block">
+            <?php $validation = \Config\Services::validation();
+            echo ($validation->listErrors()) ?: ''; ?>
+        </div>
+        <form action="<?php echo $form_action; ?>" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+            <div class="row">
+                <?= csrf_field() ?>
+                <div class="col-md-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">General</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="inputTitle">Title</label>
+                                <input type="hidden" id="inputId" name="id" class="form-control"
+                                       value="<?= $image['id'] ?>">
+                                <input type="hidden" id="inputSiteId" name="site_id" class="form-control"
+                                       value="<?= $site['id'] ?>">
+                                <input type="text" id="inputTitle" name="title" class="form-control"
+                                       value="<?= $image['title'] ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputImage">Image</label>
+                                <div class="custom-file">
+                                    <input type="file" id="inputImage" name="image" class="custom-file-input"
+                                           onchange="swapImage(this);" accept=".png, .jpg, .jpeg">
+                                    <label for="inputImage" class="custom-file-label">Choose Image</label>
+                                </div>
+
+                                <?php if (!empty($image['image'])) {
+                                    $imagePath = base_url('/uploads/sites/' . $image['site_id'] . '/' . $image['image']);
+                                } else {
+                                    $imagePath = base_url('/img/image-preview.png'); ?>
+                                <?php } ?>
+                                <div class="p-1">
+                                    <input type="hidden" name="oldImage" value="<?php echo $image['image']; ?>">
+                                    <img id="preview" src="<?php echo $imagePath; ?>" class="" width="200"
+                                         height="150"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" value="1" name="status"
+                                           id="status" <?php echo !isset($image['status']) || $image['status'] == 1 ? 'checked' : ''; ?>>
+                                    <label class="custom-control-label" for="status">Published</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <div class="col-md-6"></div>
+
+            </div>
+
+            <div class="pb-5">
+                <a href="<?php echo base_url(route_to('site_gallery', $site['id'])); ?>" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success"><?php echo !empty($image['id']) ? 'Edit' : 'Add'; ?>
+                    Image
+                </button>
+            </div>
+        </form>
+    </section>
+    <!-- /.content -->
+<?= $this->endSection() ?>
+
+<?= $this->section('style') ?>
+    <!-- Select2 -->
+    <link rel="stylesheet" href="<?php echo base_url('adminlte/plugins/select2/css/select2.min.css'); ?>">
+    <link rel="stylesheet"
+          href="<?php echo base_url('adminlte/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css'); ?>">
+    <link rel="stylesheet" href="<?php echo base_url('adminlte/plugins/summernote/summernote-bs4.css'); ?>">
+<?= $this->endSection() ?>
+
+<?= $this->section('script') ?>
+    <script src="<?php echo base_url('adminlte/plugins/select2/js/select2.full.min.js'); ?>"></script>
+    <script src="<?php echo base_url('adminlte/plugins/summernote/summernote-bs4.js'); ?>"></script>
+    <script src="<?php echo base_url('js/main.js'); ?>"></script>
+<?= $this->endSection() ?>

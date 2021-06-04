@@ -1,0 +1,735 @@
+<?= $this->extend('Admin/admin_layout') ?>
+<?= $this->section('content') ?>
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>Restaurant</h1>
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6 pull-left">
+                    <div class="row breadcrumb ">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="<?php echo base_url(route_to('admin_dashboard')); ?>">Home</a>
+                            </li>
+                            <li class="breadcrumb-item active"><?php echo !empty($site['id']) ? 'Edit' : 'Add'; ?>
+                                Restaurant
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="row float-sm-right">
+                        <a href="<?php echo base_url(route_to('list_sites')); ?>" class="btn btn-default"><i
+                                    class="fa fa-angle-left"></i> Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="help-block">
+            <?php $validation = \Config\Services::validation();
+            echo ($validation->listErrors()) ?: ''; ?>
+        </div>
+        <form action="<?php echo $form_action; ?>" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+            <div class="row">
+                <?= csrf_field() ?>
+                <div class="col-md-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">General</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="inputTitle">Restaurant Name <span class="text-red">*</span> </label>
+                                <input type="hidden" id="inputId" name="id" class="form-control"
+                                       value="<?= $site['id'] ?>">
+                                <input type="text" id="inputTitle" name="title" class="form-control"
+                                       value="<?= esc($site['title']) ?>">
+                            </div>
+                            <!--<div class="form-group">
+                                <label for="inputTitle">Code</label>
+                                <input type="text" id="inputTitle" name="code"
+                                       class="form-control" <? /*= $site['id'] > 0 ? 'readonly' : '' */ ?>
+                                       value="<? /*= $site['code'] */ ?>">
+                            </div>-->
+                            <?php if ($user['type'] == 1 && $site['id'] == 0) { ?>
+                                <div class="form-group">
+                                    <label for="inputUserId">Owner <span class="text-red">*</span></label>
+                                    <select class="form-control select2bs4 custom-select" id="inputUserId"
+                                            name="user_id">
+                                        <option value="">Select Owner</option>
+                                        <?php foreach ($owners as $owner) { ?>
+                                            <option value="<?= $owner['id']; ?>" <?php echo $owner['id'] == $site['user_id'] ? 'selected' : ''; ?>>
+                                                <?= $owner['name']; ?> <?= $owner['lname']; ?>
+                                                (<?= $owner['email']; ?>)
+                                            </option>
+                                        <?php } ?>
+                                    </select>
+                                </div>
+                            <?php } ?>
+                            <div class="form-group">
+                                <label for="inputEmail">Email</label>
+                                <input type="email" id="inputEmail" name="email" class="form-control"
+                                       value="<?= $site['email'] ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputSite">Site / Url</label>
+                                <input type="text" id="inputSite" name="url" class="form-control"
+                                       value="<?= $site['url'] ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPhone">Phone <span class="text-red">*</span></label>
+                                <input type="text" id="inputPhone" name="phone" class="form-control" required
+                                       value="<?= $site['phone'] ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputLogo">Logo</label>
+                                <div class="custom-file">
+                                    <input type="file" id="inputLogo" name="file" class="custom-file-input"
+                                           onchange="swapImage(this, '#logoPreview');" accept=".png, .jpg, .jpeg">
+                                    <label for="inputLogo" class="custom-file-label">Choose Logo</label>
+                                </div>
+
+                                <?php if (!empty($site['logo'])) {
+                                    $image = base_url('/uploads/sites/logo/' . $site['logo']); ?>
+                                    <input type="hidden" name="oldLogoImage" value="<?php echo $site['logo']; ?>">
+                                <?php } else {
+                                    $image = base_url('/img/image-preview.png'); ?>
+                                <?php } ?>
+                                <div class="p-1">
+                                    <img id="logoPreview" src="<?php echo $image; ?>" class="" width="200"
+                                         height="150"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputImage">Image</label>
+                                <div class="custom-file">
+                                    <input type="file" id="inputImage" name="image" class="custom-file-input"
+                                           onchange="swapImage(this);" accept=".png, .jpg, .jpeg">
+                                    <label for="inputImage" class="custom-file-label">Choose Image</label>
+                                </div>
+
+                                <?php if (!empty($site['image'])) {
+                                    $image = base_url('/uploads/sites/' . $site['image']); ?>
+                                    <input type="hidden" name="oldImage" value="<?php echo $site['image']; ?>">
+                                <?php } else {
+                                    $image = base_url('/img/image-preview.png'); ?>
+                                <?php } ?>
+                                <div class="p-1">
+                                    <img id="preview" src="<?php echo $image; ?>" class="" width="200" height="150"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" value="1" name="table_booking"
+                                           id="table_booking" <?php echo isset($site['table_booking']) && $site['table_booking'] == 1 ? 'checked' : ''; ?>>
+                                    <label class="custom-control-label" for="table_booking">Enable Table Booking</label>
+                                </div>
+                            </div>
+                            <!--<div class="" id="table-block"
+                                 style="display: <?php /*echo $site['table_booking'] == 1 ? 'block' : 'none'; */ ?>;">
+                                <div class="form-group">
+                                    <label for="inputTables">Number of tables <span class="text-red">*</span></label>
+                                    <input type="number" min="0" id="inputTables" name="tables" class="form-control"
+                                           value="<? /*= $site['tables'] */ ?>">
+                                </div>
+                            </div>-->
+                            <?php if ($user['type'] == 1) { ?>
+                                <div class="form-group">
+                                    <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                        <input type="checkbox" class="custom-control-input" value="1" name="status"
+                                               id="status" <?php echo !isset($site['status']) || $site['status'] == 1 ? 'checked' : ''; ?>>
+                                        <label class="custom-control-label" for="status">Published</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                        <input type="checkbox" class="custom-control-input" value="1"
+                                               name="featured_week"
+                                               id="featured_week" <?php echo !isset($site['featured_week']) || $site['featured_week'] == 1 ? 'checked' : ''; ?>>
+                                        <label class="custom-control-label" for="featured_week">Featured of week</label>
+                                    </div>
+                                </div>
+                            <?php } ?>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" value="1" name="is_open"
+                                           id="is_open" <?php echo !isset($site['is_open']) || $site['is_open'] == 1 ? 'checked' : ''; ?>>
+                                    <label class="custom-control-label" for="is_open">Is Opened?</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="bannerText">Banner Listings</label>
+                                <input type="text" class="form-control" name="banner_listings" id="bannerText"
+                                       value="<?= $site['banner_listings'] ?>">
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">Discounts & Charges & Services</h3>
+
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" value="1" name="enable_discount"
+                                           id="enable_discount" <?php echo isset($site['enable_discount']) && $site['enable_discount'] == 1 ? 'checked' : ''; ?>>
+                                    <label class="custom-control-label" for="enable_discount">Enable Discount</label>
+                                </div>
+                            </div>
+                            <div id="old_price"
+                                 style="display: <?php echo isset($site['enable_discount']) && $site['enable_discount'] == 1 ? 'block' : 'none'; ?>">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="inputDiscount">Discount <span class="text-red">*</span></label>
+                                            <input type="text" id="inputDiscount" name="discount" class="form-control"
+                                                   value="<?= $site['discount'] ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="inputDiscountType">Discount Type <span class="text-red">*</span></label>
+
+                                            <select class="form-control custom-select" id="inputDiscountType"
+                                                    name="discount_type">
+                                                <option value="0" <?php echo $site['discount_type'] == 0 ? 'selected="selected"' : ' ' ?>>
+                                                    Amount
+                                                </option>
+                                                <option value="1" <?php echo $site['discount_type'] == 1 ? 'selected="selected"' : ' ' ?>>
+                                                    Percentage
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" value="1" name="enable_service"
+                                           id="enable_service" <?php echo isset($site['enable_service']) && $site['enable_service'] == 1 ? 'checked' : ''; ?>>
+                                    <label class="custom-control-label" for="enable_service">
+                                        Enable Service Charge
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="service_charge"
+                                 style="display: <?php echo isset($site['enable_service']) && $site['enable_service'] == 1 ? 'block' : 'none'; ?>">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="inputServiceCharge">Service Charge <span
+                                                        class="text-red">*</span></label>
+                                            <input type="text" id="inputServiceCharge" name="service_charge"
+                                                   class="form-control"
+                                                   value="<?= $site['service_charge'] ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="inputServiceChargeType">Service Charge Type <span
+                                                        class="text-red">*</span></label>
+                                            <select class="form-control custom-select" id="inputServiceChargeType"
+                                                    name="service_charge_type">
+                                                <option value="0" <?php echo $site['service_charge_type'] == 0 ? 'selected="selected"' : ' ' ?>>
+                                                    Amount
+                                                </option>
+                                                <option value="1" <?php echo $site['service_charge_type'] == 1 ? 'selected="selected"' : ' ' ?>>
+                                                    Percentage
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label>Service Mode <span class="text-red">*</span></label>
+                                <br>
+                                <?php foreach ($service_modes as $key => $service_mode) { ?>
+                                    <label class="checkbox-inline mr-2">
+                                        <input name="service_modes[]" type="checkbox" value="<?php echo $key; ?>"
+                                            <?php echo isset($site) && isset($site['service_modes']) && in_array($key, $site['service_modes']) ? 'checked' : ''; ?>>
+                                        <?php echo $service_mode; ?>
+                                    </label>
+                                <?php } ?>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">Employee</h3>
+
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <?php foreach ($groups as $group) { ?>
+                                <?php if (isset($group['employee'])) { ?>
+                                    <h3><?php echo $group['title']; ?></h3>
+                                    <div class="row">
+                                        <?php foreach ($group['employee'] as $employee) { ?>
+                                            <div class="form-group col-md-6 col-sm-12">
+                                                <div class="icheck-primary d-inline">
+                                                    <input type="checkbox"
+                                                           name="employee[<?php echo $group['id']; ?>][]"
+                                                           value="<?php echo $employee['id']; ?>"
+                                                           id="employee<?php echo $employee['id']; ?>"
+                                                        <?php echo $employee['checked'] ? 'checked' : ''; ?>>
+                                                    <label for="employee<?php echo $employee['id']; ?>">
+                                                        <?php echo $employee['name'] . ' '; ?><?php echo $employee['lname']; ?>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        <?php } ?>
+                                    </div>
+                                <?php } ?>
+                            <?php } ?>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+
+                </div>
+                <div class="col-md-6">
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">Description</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="inputDescription">Description</label>
+                                <textarea name="description" class="form-control" id="inputDescription"
+                                          rows="10"><?= $site['description'] ?></textarea>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">Address</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="inputCountry">Country <span class="text-red">*</span></label>
+                                <select name="country_id" id="inputCountry" class="form-control select2bs4" required>
+                                    <option></option>
+                                    <?php foreach ($countries as $country) { ?>
+                                        <option value="<?= $country['id']; ?>" data-code="<?= $country['code']; ?>"
+                                            <?php echo $country['id'] == $site['country_id'] ? 'selected' : ''; ?>>
+                                            <?= $country['title']; ?>
+                                        </option>
+                                        <!--data-bounds='<? /*= json_encode($country['bounds']); */ ?>'-->
+                                    <?php } ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputState">State <span class="text-red">*</span></label>
+                                <select name="state_id" id="inputState" class="form-control select2bs4" required
+                                        disabled="true">
+                                    <option></option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputRegion">Region <span class="text-red">*</span></label>
+                                <select name="region_id" id="inputRegion" class="form-control select2bs4" required
+                                        disabled="true">
+                                    <option></option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputAddress">Address <span class="text-red">*</span></label>
+                                <input type="text" id="inputAddress" name="address" class="form-control" required
+                                       value="<?= $site['address'] ?>">
+                                <input type="hidden" id="inputLatitude" name="latitude"
+                                       value="<?= $site['latitude'] ?>">
+                                <input type="hidden" id="inputLongitude" name="longitude"
+                                       value="<?= $site['longitude'] ?>">
+                                <div id="map_canvas" class="mt-1"></div>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <?php /*if (isset($site) && !empty($site)) { */ ?><!--
+                        <div class="card card-secondary">
+                            <div class="card-header">
+                                <h3 class="card-title">QR Code</h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                            data-toggle="tooltip" title="Collapse">
+                                        <i class="fas fa-minus"></i></button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <img src="<?php /*echo base_url('uploads/sites/' . $site['qrcode']); */ ?>">
+                            </div>
+                        </div>
+                    --><?php /*}*/ ?>
+                    <!-- /.card -->
+
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">Working Days & Delivery</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-inline mr-2">
+                                    <input id="all_day" type="checkbox"> All day
+                                </label>
+                                <br>
+                                <?php foreach ($days as $key => $day) { ?>
+                                    <label class="checkbox-inline mr-2">
+                                        <input name="working_days[]" type="checkbox" value="<?php echo $key; ?>"
+                                               class="days-check"
+                                            <?php echo isset($site) && isset($site['working_days']) && in_array($key, $site['working_days']) ? 'checked' : ''; ?>> <?php echo $day; ?>
+                                    </label>
+                                <?php } ?>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputDelivery">Delivery</label>
+                                <input type="text" id="inputDelivery" name="delivery" class="form-control"
+                                       value="<?= $site['delivery'] ?>">
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">Printing Configuration</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" value="1" name="enable_print"
+                                           id="enable_print" <?php echo isset($site['enable_print']) && $site['enable_print'] == 1 ? 'checked' : ''; ?>>
+                                    <label class="custom-control-label" for="enable_print">
+                                        Enable Printer
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="print_block"
+                                 style="display: <?php echo isset($site['enable_print']) && $site['enable_print'] == 1 ? 'block' : 'none'; ?>">
+
+                                <div class="row">
+                                    <div class="col-md-6 col-sm-12">
+                                        <div class="form-group">
+                                            <label for="printerIpAddress">Printer Ip Address</label>
+                                            <input type="text" id="printerIpAddress" name="ip_address"
+                                                   class="form-control"
+                                                   value="<?= $site['ip_address'] ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-sm-12">
+                                        <div class="form-group">
+                                            <label for="printerPort">Printer Port</label>
+                                            <input type="number" min="0" id="printerPort" name="port"
+                                                   class="form-control"
+                                                   value="<?= $site['port'] > 0 ? $site['port'] : 9100 ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-sm-12">
+                                        <div class="form-group">
+                                            <label for="characterPerLine">Printer Characters Per Line</label>
+                                            <input type="number" min="0" id="characterPerLine" name="print_character"
+                                                   class="form-control"
+                                                   value="<?= $site['print_character'] > 0 ? $site['print_character'] : 48 ?>">
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="pb-5">
+                <a href="<?php echo base_url(route_to('list_sites')); ?>" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success"><?php echo !empty($site['id']) ? 'Edit' : 'Add'; ?>
+                    Restaurant
+                </button>
+            </div>
+        </form>
+    </section>
+    <!-- /.content -->
+<?= $this->endSection() ?>
+
+<?= $this->section('style') ?>
+
+    <!-- Select2 -->
+    <link rel="stylesheet" href="<?php echo base_url('adminlte/plugins/select2/css/select2.min.css'); ?>">
+    <link rel="stylesheet"
+          href="<?php echo base_url('adminlte/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css'); ?>">
+    <link rel="stylesheet" href="<?php echo base_url('adminlte/plugins/summernote/summernote-bs4.css'); ?>">
+<?= $this->endSection() ?>
+
+<?= $this->section('script') ?>
+    <script src="<?php echo base_url('adminlte/plugins/select2/js/select2.full.min.js'); ?>"></script>
+    <script src="<?php echo base_url('adminlte/plugins/summernote/summernote-bs4.js'); ?>"></script>
+
+<?php $google_API_key = $api_key; ?>
+    <script src="https://maps.googleapis.com/maps/api/js?key=<?php echo $google_API_key; ?>&libraries=places"
+            defer
+    ></script>
+    <script src="<?php echo base_url('js/map.js'); ?>"></script>
+    <script src="<?php echo base_url('js/main.js'); ?>"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            //Initialize Select2 Elements
+            $('.select2bs4').select2({
+                theme: 'bootstrap4'
+            });
+
+            // Summernote
+            $('.editor').summernote({
+                height: 150,   //set editable area's height
+            });
+
+            $('input[name="enable_discount"]').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#old_price').show();
+                } else {
+                    $('#old_price').hide();
+                }
+            });
+
+            $('#all_day').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('.days-check').prop('checked', true);
+                }
+            });
+
+            checkChecked();
+            $('.days-check').on('change', function () {
+                checkChecked();
+            });
+
+            $('input[name="enable_service"]').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#service_charge').show();
+                } else {
+                    $('#service_charge').hide();
+                }
+            });
+
+            $('input[name="enable_print"]').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#print_block').show();
+                } else {
+                    $('#print_block').hide();
+                }
+            });
+
+            //table booking
+            /*$('input[name="table_booking"]').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#table-block').show();
+                } else {
+                    $('#table-block').hide();
+                }
+            });*/
+
+            //select 2 for address
+            let site_state_id = 0;
+            let site_region_id = 0;
+            let zoom = 0;
+            <?php if($site['id'] > 0) {?>
+            let site_country_id = parseInt('<?php echo $site['country_id'];?>');
+            site_state_id = parseInt('<?php echo $site['state_id'];?>');
+            site_region_id = parseInt('<?php echo $site['region_id'];?>');
+            loadStates();
+            loadRegions(site_state_id);
+            <?php } ?>
+
+            $('#inputCountry').select2({
+                placeholder: "Select a country",
+                theme: 'bootstrap4'
+            }).on('select2:select', function (e) {
+                //let id = e.params.data.id;
+                zoom = 8;
+
+                let country = $.trim($("#inputCountry option:selected").text());
+                if (country != '') {
+                    var geocoder;
+                    geocoder = new google.maps.Geocoder();
+
+                    geocoder.geocode({'address': country}, function (results, status) {
+                        if (status == google.maps.GeocoderStatus.OK) {
+                            $('#inputLatitude').val(results[0].geometry.location.lat());
+                            $('#inputLongitude').val(results[0].geometry.location.lng());
+                        }
+                    });
+                    $('#inputAddress').val(country);
+                }
+                let code = $("#inputCountry option:selected").data('code');
+                /*let bounds = $("#inputCountry option:selected").data('bounds');
+                bounds.north = parseFloat(bounds.north);
+                bounds.east = parseFloat(bounds.east);
+                bounds.west = parseFloat(bounds.west);
+                bounds.south = parseFloat(bounds.south);
+                bdMapAutocomplete.bounds = bounds;*/
+                initiateMap(code);
+                loadStates();
+            });
+            $('#inputState').select2({
+                placeholder: "Select a state",
+                theme: 'bootstrap4'
+            }).on('select2:select', function (e) {
+                let id = e.params.data.id;
+                loadRegions(id);
+            });
+            $('#inputRegion').select2({
+                placeholder: "Select a region",
+                theme: 'bootstrap4'
+            });
+
+            <?php if($site['id'] > 0){?>
+            let code = $("#inputCountry option:selected").data('code');
+            initiateMap(code);
+            <?php }else{ ?>
+            initiateMap();
+            <?php } ?>
+
+            function initiateMap(code = '') {
+                let options = {};
+                if (code != '') {
+                    options = {
+                        componentRestrictions: {
+                            country: code
+                        }
+                    };
+                }
+
+                setTimeout(function () {
+                    bdMapAutocomplete.mapElement = 'map_canvas';
+                    bdMapAutocomplete.mapLat = 'inputLatitude';
+                    bdMapAutocomplete.mapLng = 'inputLongitude';
+                    bdMapAutocomplete.mapInput = 'inputAddress';
+                    bdMapAutocomplete.init(options, zoom);
+                    bdMapAutocomplete.showMarker(true);
+                }, 600);
+            }
+
+            function checkChecked() {
+                $('.days-check').each(function () {
+                    if (!$(this).is(':checked')) {
+                        $('#all_day').prop('checked', false);
+                    }
+                });
+                if ($('.days-check:checked').length === $('.days-check').length) {
+                    $('#all_day').prop('checked', true);
+                }
+            }
+
+            function loadStates() {
+                let container = $('#inputState');
+                container.empty();
+                let country_id = $('#inputCountry').val();
+                $.ajax({
+                    url: '<?php echo base_url(route_to('fetch_states')); ?>',
+                    data: {country_id: country_id},
+                    type: 'POST',
+                    dataType: 'json',
+                    beforeSend: function () {
+                        container.empty();
+                        container.attr('disabled', true);
+                    },
+                    success: function (data) {
+                        let states = data.states;
+                        let len = states.length;
+                        if (data.success && len > 0) {
+                            container.append("<option></option>");
+                            for (var i = 0; i < len; i++) {
+                                var selected = '';
+                                if (site_state_id > 0 && site_state_id == states[i]['id']) {
+                                    selected = 'selected';
+                                }
+                                container.append("<option value='" + states[i]['id'] + "' " + selected + ">" + states[i]['title'] + "</option>");
+                            }
+                            container.attr('disabled', false);
+                        }
+                    }
+                });
+            }
+
+            function loadRegions(state_id) {
+                let container = $('#inputRegion');
+                container.empty();
+                let country_id = $('#inputCountry').val();
+                $.ajax({
+                    url: '<?php echo base_url(route_to('fetch_regions')); ?>',
+                    data: {country_id: country_id, state_id: state_id},
+                    type: 'POST',
+                    dataType: 'json',
+                    beforeSend: function () {
+                        container.empty();
+                        container.attr('disabled', true);
+                    },
+                    success: function (data) {
+                        let regions = data.regions;
+                        let len = regions.length;
+                        if (data.success && len > 0) {
+                            container.append("<option></option>");
+                            for (var i = 0; i < len; i++) {
+                                var selected = '';
+                                if (site_region_id > 0 && site_region_id == regions[i]['id']) {
+                                    selected = 'selected';
+                                }
+                                container.append("<option value='" + regions[i]['id'] + "' " + selected + ">" + regions[i]['title'] + "</option>");
+                            }
+                            container.attr('disabled', false);
+                        }
+                    }
+                });
+            }
+
+        });
+    </script>
+<?= $this->endSection() ?>

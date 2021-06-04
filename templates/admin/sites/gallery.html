@@ -1,0 +1,142 @@
+<?= $this->extend('Admin/admin_layout') ?>
+<?= $this->section('content') ?>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Gallery</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="<?php echo base_url(route_to('admin_dashboard')); ?>">Home</a>
+                    </li>
+                    <li class="breadcrumb-item"><a
+                                href="<?php echo base_url(route_to('list_sites')); ?>"><?php echo $site['title']; ?></a>
+                    </li>
+                    <li class="breadcrumb-item active">Gallery</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <h3 class="card-title col"><?php echo $title; ?> Lists</h3>
+                    <?php if (checkPermission($user, $permissions, 'create-restaurant_gallery')) { ?>
+                        <div class="col text-right">
+                            <a href="<?php echo base_url(route_to('new_site_gallery', $site['id'])); ?>"
+                               class="btn btn-default">
+                                <i class="fa fa-plus"></i> Add Images
+                            </a>
+                        </div>
+                    <?php } ?>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                    <table id="userUsers" class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (!empty($images) && is_array($images)) : ?>
+                            <?php foreach ($images as $rowImage): ?>
+                                <tr>
+                                    <td><?php echo $rowImage['id'] ?></td>
+                                    <td>
+                                        <?php if (!empty($rowImage['image'])) { ?>
+                                            <img src="<?= base_url('/uploads/sites/' . $rowImage['site_id'] . '/' . $rowImage['image']) ?>"
+                                                 width="80"
+                                                 class="img-fluid img-thumbnail">
+                                        <?php } ?>
+                                    </td>
+                                    <td>
+                                        <?php if (checkPermission($user, $permissions, 'edit-restaurant_gallery')) { ?>
+                                            <a href="<?php echo base_url(route_to('edit_site_gallery', $rowImage['site_id'], $rowImage['id'])); ?>">
+                                                <?php echo $rowImage['title'] ?>
+                                            </a>
+                                        <?php } else { ?>
+                                            <?php echo $rowImage['title'] ?>
+                                        <?php } ?>
+                                    </td>
+                                    <td>
+                                        <?php echo $rowImage['status'] == 1 ? 'Published' : 'Unpublished' ?>
+                                    </td>
+                                    <td>
+                                        <?php if (checkPermission($user, $permissions, 'edit-restaurant_gallery')) { ?>
+                                            <a href="<?php echo base_url(route_to('edit_site_gallery', $rowImage['site_id'], $rowImage['id'])); ?>"
+                                               class="text-cyan">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        <?php } ?>
+                                        <?php if (checkPermission($user, $permissions, 'delete-restaurant_gallery')) { ?>
+                                            <a href="#" data-id="<?= $rowImage['id'] ?>"
+                                               class="text-danger deleteUser">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <tr>
+                                <td colspan="5"> Unable to find data!!</td>
+                            </tr>
+                        <?php endif ?>
+
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <?php $pager = \Config\Services::pager();
+                echo $pager->makeLinks($page, $perPage, $total) ?>
+                <!-- /.card-body -->
+            </div>
+        </div>
+    </div>
+</section>
+<?= $this->endSection() ?>
+
+<?= $this->section('script') ?>
+<script type="text/javascript">
+    $(function () {
+        <?php if (checkPermission($user, $permissions, 'delete-restaurant_gallery')) { ?>
+        $("#userUsers").on('click', '.deleteUser', function (e) {
+            e.preventDefault();
+            let id = $(this).data('id');
+            if (confirm('Are you sure to remove this record ?')) {
+                $.ajax({
+                    url: '<?php echo base_url('/admin/sites/delete_gallery/'); ?>' + '/' + id,
+                    type: 'delete',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.success) {
+                            location.reload();
+                        }
+                    }
+                });
+            }
+        });
+        <?php } ?>
+    });
+</script>
+<?= $this->endSection() ?>
+
+

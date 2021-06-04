@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+{% load static %}
+
+{% include "admin/templates/header.html" %}
+
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+    <!-- Navbar -->
+    {% include "admin/templates/nav.html" %}
+
+    {% include "admin/templates/side_menu.html" %}
+    <!-- /.navbar -->
+
+    <div class="content-wrapper">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock content %}
+    </div>
+</div>
+<!-- Main Footer -->
+{% include "admin/templates/footer.html" %}
+{% block script %}
+{% endblock script %}
+<script>
+    $('.signOutButton').off('click').on('click', function (e) {
+        e.preventDefault();
+        var r = confirm("Are you sure you want to sign out!");
+        if (r == true) {
+            let data = ($('#signOutForm').serializeArray());
+            console.log(data)
+            $.ajax({
+                url: '{% url 'adminLogout' %}',
+                data: data,
+                type: 'POST',
+                dataType: 'json',
+                success: function (data) {
+                    location.reload();
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

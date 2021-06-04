@@ -1,0 +1,77 @@
+{% load static %}
+<!-- Main Sidebar Container -->
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="#" class="brand-link" target="_blank">
+        <img src="{% static 'images/icon.png' %}" class="brand-image"/>
+        <span class="brand-text" style="color:#F78319;">Management</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- Sidebar user panel (optional) -->
+        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+            <div class="image">
+                <img src="{% static 'images/usericon.png' %}" class="img-circle elevation-2" style="height: 33.6px; object-fit: cover;"
+                     alt="User Image">
+            </div>
+            <div class="info">
+                <a href="javascript: void(0);" class="d-block">Kush Raj Rimal</a>
+            </div>
+        </div>
+
+        <!-- Sidebar Menu -->
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                <!-- Add icons to the links using the .nav-icon class
+                     with font-awesome or any other icon font library -->
+
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a href="{% url 'adminHome' %}"
+                       class="nav-link active">
+                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                        <p>
+                            Dashboard
+                        </p>
+                    </a>
+                </li>
+
+                <!-- Users -->
+                {#                <?php if (checkPermission($user, $user_group_permission, 'view-user') && ($user['type'] == 1 || $user['manage_users'] == 1)) { ?>#}
+                <li class="nav-item">
+                    <a href="{% url 'adminUsers' %}"
+                       class="nav-link ">
+                        <i class="nav-icon fas fa-user"></i>
+                        <p>
+                            Users
+                        </p>
+                    </a>
+                </li>
+                {#                <?php } ?>#}
+                <li class="nav-item">
+                    <a href="#"
+                       class="nav-link ">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>
+                            Groups
+                        </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#"
+                       class="nav-link ">
+                        <i class="nav-icon fas fa-universal-access"></i>
+                        <p>
+                            Permissions
+                        </p>
+                    </a>
+                </li>
+
+
+            </ul>
+        </nav>
+        <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+</aside>

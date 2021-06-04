@@ -1,0 +1,122 @@
+<?= $this->extend('Admin/admin_layout') ?>
+<?= $this->section('content') ?>
+    <section class="content-header">
+        <h1>Permissions</h1>
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6 pull-left">
+                    <div class="row breadcrumb ">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="<?php echo base_url(route_to('admin_dashboard')); ?>">Home</a>
+                            </li>
+                            <li class="breadcrumb-item active">Permissions</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="row float-sm-right">
+                        <a href="<?php //echo base_url(redirect()->back()); ?>" class="btn btn-default"><i
+                                    class="fa fa-angle-left"></i> Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <form action="<?php echo base_url(route_to('update_permissions')); ?>" method="post" accept-charset="utf-8"
+              enctype="multipart/form-data">
+            <div class="row">
+                <?= csrf_field() ?>
+                <?php foreach ($groups as $group) { ?>
+                    <div class="col-md-6">
+                        <div class="card card-primary collapsed-card">
+                            <div class="card-header">
+                                <h3 class="card-title"><?php echo $group['title']; ?></h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                            data-toggle="tooltip" title="Collapse">
+                                        <i class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <input type="checkbox" class="check-all" data-group="<?php echo $group['id']; ?>"
+                                           id="permission-<?php echo $group['id']; ?>-all">
+                                    <label for="permission-<?php echo $group['id']; ?>-all">
+                                        All
+                                    </label>
+                                </div>
+                                <?php foreach ($permissionsCategories as $category) {
+                                    /*if(in_array($group['id'],[4,5]) && $category['title'] == 'user'){
+                                        continue;
+                                    }*/?>
+                                    <div class="row permission-row">
+                                        <?php foreach ($permissionsActivities as $activity) { ?>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <input type="checkbox" <?php echo in_array($group['id'] . '-' . $activity . '-' . $category['title'], $checked) ? 'checked' : ''; ?>
+                                                           name="permissions[<?php echo $group['id']; ?>][<?php echo $activity . '_' . $category['title']; ?>]"
+                                                           id="permission-<?php echo $group['id']; ?>-<?php echo $activity . '_' . $category['title']; ?>">
+                                                    <label for="permission-<?php echo $group['id']; ?>-<?php echo $activity . '_' . $category['title']; ?>" class="text-sm">
+                                                        <?php echo $activity . '-' . $category['title']; ?>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        <?php } ?>
+                                    </div>
+                                <?php } ?>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <!-- /.card -->
+                    </div>
+                <?php } ?>
+
+            </div>
+
+            <div class="pb-5">
+                <button type="submit" class="btn btn-success">Update Permissions</button>
+            </div>
+        </form>
+    </section>
+    <!-- /.content -->
+<?= $this->endSection() ?>
+<?= $this->section('style') ?>
+    <style type="text/css">
+        .permission-row {
+            border-bottom: solid 1px #eee;
+            margin-bottom: 20px;
+        }
+
+        .permission-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+    </style>
+<?= $this->endSection() ?>
+<?= $this->section('script') ?>
+    <script src="<?php echo base_url('js/main.js'); ?>"></script>
+    <script type="text/javascript">
+        $().ready(function () {
+            $('.check-all').off('change').on('change', function () {
+                let group = $(this).data('group');
+                let checked = $(this).is(":checked");
+                if (checked) {
+                    $('input[name^="permissions[' + group + ']"]').prop('checked', true).attr('checked', true);
+                } else {
+                    $('input[name^="permissions[' + group + ']"]').prop('checked', false).attr('checked', false);
+                }
+            });
+            <?php foreach ($groups as $group) { ?>
+            $('input[name^="permissions[' + '<?php echo $group['id'];?>' + ']"]').off('change').on('change', function () {
+                if (!$(this).is(":checked")) {
+                    $('[data-group="' + '<?php echo $group['id'];?>' + '"]').prop('checked', false).attr('checked', false);
+                }
+            });
+            <?php }?>
+        })
+    </script>
+<?= $this->endSection() ?>

@@ -1,0 +1,15 @@
+{% extends "account/profileSidebarBase.html" %}
+{% load crispy_forms_tags %}
+{% block profilepagemaincontent %}
+    <h2>Update Profile</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.media }}
+        {{ form|crispy }}
+        {{ form.non_field_errors }}
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+{% endblock %}
+

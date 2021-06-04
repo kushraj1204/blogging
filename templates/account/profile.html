@@ -1,0 +1,16 @@
+{% extends "account/profileSidebarBase.html" %}
+{% block profilepagemaincontent %}
+    {{ user.email }}
+    {{ user.username }}
+    {{ user.first_name }}
+    {{ user.last_name }}
+    {{ user.dob }}
+    {{ user.address }}
+    {{ user.phone }}
+    {{ user.gender }}
+    {{ user.profile_image }}
+    <p><a href="{% url 'accounts:password_change' %}">Change Password</a>.</p>
+
+
+{% endblock %}
+

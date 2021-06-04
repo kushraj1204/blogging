@@ -1,0 +1,479 @@
+{% extends "admin/admin_layout.html" %}
+{% load static %}
+{% load custom_tags %}
+{% block content %}
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            {% if user %}
+                Edit User
+            {% else %}
+                Add User
+            {% endif %}
+        </h1>
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6 pull-left">
+                    <div class="row breadcrumb ">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{% url "adminHome" %}">Home</a>
+                            </li>
+                            <li class="breadcrumb-item active">
+                                {% if user %}
+                                    Edit User
+                                {% else %}
+                                    Add User
+                                {% endif %}
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="row float-sm-right">
+                        <a href="{% url 'adminUsers' %}" class="btn btn-default"><i
+                                class="fa fa-angle-left"></i> Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="help-block">
+            {#            <?php $validation = \Config\Services::validation();#}
+            {#             echo ($validation->listErrors()) ?: ''; ?>#}
+        </div>
+
+        <form action="{% url 'adminUserDetail' pk=postData.id.value %}" method="post" accept-charset="utf-8"
+              enctype="multipart/form-data">
+            <div class="row">
+                {% csrf_token %}
+                <div class="col-md-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">General</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="first_name">First Name</label>
+                                <input type="hidden" id="id" name="id" class="form-control"
+                                       value="{{ postData.id.value }}">
+                                <input type="text" id="first_name" name="first_name"
+                                       class="form-control {% if postData.first_name.error %}is-invalid{% endif %}"
+                                       value="{{ postData.first_name.value }}">
+                                {% if postData.first_name.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.first_name.error }}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+                            <div class="form-group">
+                                <label for="last_name">Last Name</label>
+                                <input type="text" id="last_name" name="last_name"
+                                       class="form-control {% if postData.last_name.error %}is-invalid{% endif %}"
+                                       value="{{ postData.last_name.value }}">
+                                {% if postData.last_name.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.last_name.error }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label for="gender">Gender</label>
+                                <select id="gender" name="gender" class="form-control">
+                                    <option {% ifequal postData.gender.value "Male" %} selected{% endifequal %}>Male
+                                    </option>
+                                    <option {% ifequal postData.gender.value "Female" %} selected{% endifequal %}>Female
+                                    </option>
+                                    <option {% ifequal postData.gender.value "Others" %} selected{% endifequal %}>Others
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone</label>
+                                <input type="text" id="phone" name="phone"
+                                       class="form-control {% if postData.phone.error %}is-invalid{% endif %}"
+                                       value="{{ postData.phone.value }}">
+                                {% if postData.phone.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.phone.error }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label for="dob">Date</label>
+                                <input class="form-control {% if postData.dob.error %}is-invalid{% endif %}" name="dob"
+                                       type="date" value="{{ postData.dob.value }}"
+                                       id="dob">
+                                {% if postData.dob.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.dob.error }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label for="address">Address</label>
+                                <input class="form-control {% if postData.address.error %}is-invalid{% endif %} {% if postData.address.error %}is-invalid{% endif %}"
+                                       name="address" type="address"
+                                       value="{{ postData.address.value }}"
+                                       id="address">
+
+                                {% if postData.address.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.address.error }}
+                                    </div>
+                                {% endif %}
+                                <input type="text" id="lat" name="lat" value="{{ postData.lat.value }}"
+                                       placeholder="Latitude" hidden>
+                                {% if postData.lat.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.lat.error }}
+                                    </div>
+                                {% endif %}
+
+                                <input type="text" id="lng" name="lng" value="{{ postData.lng.value }}"
+                                       placeholder="Longitude" hidden>
+                                <div id="map" style="height: 400px;width: 100%;"></div>
+                            </div>
+                            {% if postData.lng.error %}
+                                <div class="invalid-feedback">
+                                    {{ postData.lng.error }}
+                                </div>
+                            {% endif %}
+                            <div class="form-group">
+                                <div class="custom-file">
+                                    <input type="file" id="profile_image" name="profile_image" class="custom-file-input"
+                                           accept=".png, .jpg, .jpeg">
+                                    <label for="profile_image" class="custom-file-label">Choose Image</label>
+                                </div>
+
+
+                                {% comment %}    {% if postData.profile_image %}
+                                    <div class="p-1">
+                                        <input type="hidden" name="profile_image" value="{{ postData.profile_image }}">
+                                        <img id="preview" src="{% static postData.profile_image %}" class="" width="200"
+                                             height="150"/>
+                                    </div>
+                                {% else %}
+                                    <div class="p-1">
+                                        <input type="hidden" name="profile_image" value="">
+                                        <img id="preview" src="{% static 'images/icon.png' %}" class="" width="200"
+                                             height="150"/>
+                                    </div>
+                                {% endif %}
+                            {% endcomment %}
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <div class="col-md-6">
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">Account</h3>
+
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email"
+                                       class="form-control {% if postData.email.error %}is-invalid{% endif %}"
+                                        {% if postData.id.value %} readonly{% endif %}
+                                       value="{{ postData.email.value }}">
+                                {% if postData.email.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.email.error }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="test" id="username" name="username"
+                                       class="form-control {% if postData.username.error %}is-invalid{% endif %}"
+                                       value="{{ postData.username.value }}">
+                                {% if postData.username.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.username.error }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" name="password"
+                                       class="form-control {% if postData.password.error %}is-invalid{% endif %}"
+                                >
+                                {% if postData.password.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.password.error }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" value="1" name="is_superuser"
+                                           id="is_superuser" {% if postData.is_superuser.value %} checked{% endif %}>
+                                    <label class="custom-control-label" for="is_superuser">Is Superuser</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" value="1" name="is_staff"
+                                           id="is_staff" {% if postData.is_staff.value %} checked{% endif %}>
+                                    <label class="custom-control-label" for="is_staff">Is Staff</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" value="1" name="is_active"
+                                           id="is_active" {% if postData.is_active.value %} checked{% endif %}>
+                                    <label class="custom-control-label" for="is_active">Is Active</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" value="1" name="phone_activated"
+                                           id="phone_activated" {% if postData.phone_activated.value %}
+                                           checked{% endif %}>
+                                    <label class="custom-control-label" for="phone_activated">Phone Verified</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" value="1" name="sendEmail"
+                                           id="sendEmail" {% if postData.sendEmail.value %} checked{% endif %}>
+                                    <label class="custom-control-label" for="sendEmail">Send Emails</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input" value="1" name="sendSMS"
+                                           id="sendSMS" {% if postData.sendSMS.value %} checked{% endif %}>
+                                    <label class="custom-control-label" for="sendSMS">Send SMS</label>
+                                </div>
+                            </div>
+
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+
+
+                    <!-- /.card -->
+                </div>
+
+            </div>
+
+            <div class="pb-5">
+                <a href="<?php echo base_url(route_to('list_users')); ?>" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">{% if postData.id.value %}Update{% else %}Save{% endif %}
+                </button>
+            </div>
+        </form>
+    </section>
+    <!-- /.content -->
+{% endblock %}
+{% block script %}
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAftlPuppWtwjk-fBUQelgJmPtNFQ81_WA&libraries=places"></script>
+
+    <script>
+        $(document).ready(function () {
+            removeInvalidClass();
+            checkBoxControls();
+            profileImageUpload();
+            usernameAuto();
+            {#new addressPicker({#}
+            {#    'lat':{{postData.lat}},#}
+            {#    'lng':{{ postData.lat }},#}
+            {#    'mapid': 'map',#}
+            {#    'latid': 'lat',#}
+            {#    'lngid': 'lng',#}
+            {#    'addressid': 'addressid'#}
+
+
+        });
+
+        function usernameAuto() {
+            $('#email').on('change', function () {
+                if ($('#username').val() == '') {
+                    $('#username').val($('#email').val());
+                }
+            });
+        }
+
+        function profileImageUpload() {
+            $("#profile_image").change(function () {
+                var fd = new FormData();
+                var files = $('#profile_image')[0].files;
+
+                // Check file selected or not
+                if (files.length > 0) {
+                    fd.append('file', files[0]);
+                    fd.append('csrfmiddlewaretoken', '{{csrf_token}}');
+                    $.ajax({
+                        url: '{% url 'userImageUpload' %}',
+                        type: 'post',
+                        data: fd,
+                        contentType: false,
+                        processData: false,
+                        success: function (response) {
+                            if (response != 0) {
+                                $("#img").attr("src", response);
+                                $(".preview img").show(); // Display image element
+                            } else {
+                                alert('file not uploaded');
+                            }
+                        },
+                    });
+                } else {
+                    alert("Please select a file.");
+                }
+            });
+
+        }
+
+        function removeInvalidClass() {
+            $('input').on('focus', function () {
+                var id = this.id;
+                $('#' + id).removeClass('is-invalid');
+            });
+        }
+
+        function checkBoxControls() {
+            $('input[type=checkbox]').on('change', function () {
+                var id = this.id;
+                var prevState = $('#' + id).val();
+                $('#' + id).val((prevState == 1) ? 0 : 1);
+                {#$('#' + id).prop('checked', (prevState == 1) ? false : true);#}
+            });
+        }
+
+        class addressPicker {
+            constructor(props) {
+                console.log(props, 'props hai')
+                this.map = '';
+                this.infoWindow = '';
+                this.marker = '';
+                this.address = '';
+                this.autocomplete = '';
+                this.geocoder = '';
+                this.pos = {
+                    lat: props.lat,
+                    lng: props.lng
+                };
+                this.mapid = props.mapid;
+                this.addressid = props.addressid;
+                this.latid = props.latid;
+                this.lngid = props.lngid;
+                this.initMap();
+            }
+
+
+            initMap() {
+                this.geocoder = new google.maps.Geocoder;
+                this.map = new google.maps.Map(
+                    document.getElementById(this.mapid), {
+                        zoom: 14,
+                        center: this.pos
+                    });
+                this.detectLocation();
+                this.autocomplete = new google.maps.places.Autocomplete(document.getElementById('address'));
+                this.places = new google.maps.places.PlacesService(this.map);
+                this.autocomplete.addListener('place_changed', this.onPlaceChanged);
+            }
+
+            detectLocation() {
+                this.infoWindow = new google.maps.InfoWindow;
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        this.pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        this.infoWindow.setPosition(pos);
+                        document.getElementById(this.latid).value = this.pos.lat;
+                        document.getElementById(this.lngid).value = this.pos.lng;
+                        this.marker = new google.maps.Marker({
+                            position: this.pos,
+                            map: this.map,
+                            draggable: true
+                        });
+                        this.marker.addListener('dragend', this.handleEvent);
+                        this.map.setCenter(this.pos);
+                    }, function () {
+                        this.handleLocationError(true, this.infoWindow, this.map.getCenter());
+                    });
+                } else {
+                    // Browser doesn't support Geolocation
+                    this.handleLocationError(false, this.infoWindow, this.map.getCenter());
+                }
+            }
+
+            handleLocationError(browserHasGeolocation, infoWindow, pos) {
+                infoWindow.setPosition(pos);
+                infoWindow.setContent(browserHasGeolocation ?
+                    'Error: The Geolocation service failed.' :
+                    'Error: Your browser doesn\'t support geolocation.');
+                infoWindow.open(this.map);
+            }
+
+            handleEvent(event) {
+                document.getElementById('latitude').value = event.latLng.lat();
+                document.getElementById('longitude').value = event.latLng.lng();
+                geocodeLatLng(event.latLng.lat(), event.latLng.lng());
+            }
+
+            onPlaceChanged() {
+                var place = this.autocomplete.getPlace();
+                if (place.geometry) {
+                    map.panTo(place.geometry.location);
+                    let latlng = new google.maps.LatLng(map.getCenter().lat(), map.getCenter().lng());
+                    marker.setPosition(latlng);
+                    document.getElementById('latitude').value = map.getCenter().lat();
+                    document.getElementById('longitude').value = map.getCenter().lng();
+                    map.setZoom(14);
+                } else {
+                    document.getElementById('autocomplete').placeholder = 'Enter a city';
+                }
+            }
+
+            geocodeLatLng(lat, lng) {
+                var latlng = {lat: lat, lng: lng};
+                this.geocoder.geocode({'location': latlng}, function (results, status) {
+                    if (status === 'OK') {
+                        if (results[0]) {
+                            document.getElementById(this.addressId).value = results[0].formatted_address;
+                        } else {
+                            window.alert('Error parsing Address');
+                        }
+                    } else {
+                        window.alert('Geocoder failed due to: ' + status);
+                    }
+                });
+            }
+        }
+
+
+    </script>
+
+
+
+{% endblock %}

@@ -1,0 +1,177 @@
+<?= $this->extend('Admin/admin_layout') ?>
+<?= $this->section('content') ?>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <?= view('Admin/templates/_notifications') ?>
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Restaurant</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="<?php echo base_url(route_to('admin_dashboard')); ?>">Home</a>
+                    </li>
+                    <li class="breadcrumb-item active">Restaurant</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><?php echo $title; ?> Lists</h3>
+                    <?php if (checkPermission($user, $permissions, 'create-restaurant') && ($user['multi_sites'] || $user['type'] == 1)) { ?>
+                        <div class="text-right">
+                            <?php if ((int)$user['sites'] == 0 || $user['multi_sites']) { ?>
+                            <a href="<?= base_url(route_to('new_site')) ?>" class="btn btn-default">
+                                <i class="fas fa-plus"></i> Add Restaurant
+                            </a>
+                            <?php } /*elseif ($user['sites'] > 0 && $user['type'] == 2) { */ ?><!--
+                            <a href="<? /*= base_url(route_to('edit_site', $user['sites'])) */ ?>" class="btn btn-default">
+                                <i class="far fa-edit"></i> Edit Site
+                            </a>
+                        --><?php /*}*/ ?>
+                        </div>
+                    <?php } ?>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                    <table id="userUsers" class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Restaurant Name</th>
+                            <th>Owner</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (!empty($sites) && is_array($sites)) : ?>
+                            <?php foreach ($sites as $rowSite): ?>
+                                <tr>
+                                    <td><?php echo $rowSite['id'] ?></td>
+                                    <td>
+                                        <?php if (!empty($rowSite['image'])) { ?>
+                                            <img src="<?= base_url('/uploads/sites/' . $rowSite['image']) ?>" width="80"
+                                                 class="img-fluid img-thumbnail">
+                                        <?php } ?>
+                                    </td>
+                                    <td>
+                                        <?php if (checkPermission($user, $permissions, 'edit-restaurant')) { ?>
+                                            <a class="d-block mb-1 text-dark"
+                                               href="<?php echo base_url(route_to('edit_site', $rowSite['id'])); ?>">
+                                                <b><?php echo $rowSite['title'] ?></b>
+                                            </a>
+                                        <?php } else { ?>
+                                            <b><?php echo $rowSite['title'] ?></b>
+                                        <?php } ?>
+
+                                        <div class="table-link">
+
+                                            <?php if (checkPermission($user, $permissions, 'view-shifts')) { ?>
+                                                <small>
+                                                    <a class="text-secondary"
+                                                       href="<?php echo base_url(route_to('list_shifts', $rowSite['id'])); ?>">
+                                                        <i class="far fa-clock"></i> Update working hours
+                                                    </a>
+                                                </small>
+                                            <?php } ?>
+                                            <?php if (checkPermission($user, $permissions, 'view-restaurant_gallery')) { ?>
+                                                <small class="ml-2">
+                                                    <a class="text-secondary"
+                                                       href="<?php echo base_url(route_to('site_gallery', $rowSite['id'])); ?>">
+                                                        <i class="far fa-images"></i> Update Gallery
+                                                    </a>
+                                                </small>
+                                            <?php } ?>
+                                            <?php if (checkPermission($user, $permissions, 'view-table')) { ?>
+                                                <small class="ml-2">
+                                                    <a class="text-secondary"
+                                                       href="<?php echo base_url(route_to('sites_table', $rowSite['id'])); ?>">
+                                                        <i class="fas fa-chair"></i> Update Tables
+                                                    </a>
+                                                </small>
+                                            <?php } ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <?php echo $rowSite['owner']; ?>
+                                    </td>
+                                    <td>
+                                        <?php echo $rowSite['status'] == 1 ? 'Published' : 'Unpublished' ?>
+                                    </td>
+                                    <td>
+                                        <?php if (checkPermission($user, $permissions, 'edit-restaurant')) { ?>
+                                            <a href="<?php echo base_url(route_to('edit_site', $rowSite['id'])); ?>"
+                                               class="text-cyan mr-3">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        <?php } ?>
+                                        <?php if (checkPermission($user, $permissions, 'delete-restaurant')) { ?>
+                                            <a href="#" data-id="<?= $rowSite['id'] ?>" class="text-danger deleteUser">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <tr>
+                                <td colspan="6"> Unable to find data!!</td>
+                            </tr>
+                        <?php endif ?>
+
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Restaurant Name</th>
+                            <th>Owner</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <?php $pager = \Config\Services::pager();
+                echo $pager->makeLinks($page, $perPage, $total) ?>
+                <!-- /.card-body -->
+            </div>
+        </div>
+    </div>
+</section>
+<?= $this->endSection() ?>
+
+<?= $this->section('script') ?>
+<script type="text/javascript">
+    $(function () {
+        <?php if (checkPermission($user, $permissions, 'delete-restaurant')) { ?>
+        $("#userUsers").on('click', '.deleteUser', function (e) {
+            e.preventDefault();
+            let id = $(this).data('id');
+            if (confirm('Are you sure to remove this record ?')) {
+                $.ajax({
+                    url: '<?php echo base_url('/admin/sites/'); ?>' + '/' + id,
+                    type: 'delete',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.success) {
+                            location.reload();
+                        }
+                    }
+                });
+            }
+        });
+        <?php } ?>
+    });
+</script>
+<?= $this->endSection() ?>
+
+

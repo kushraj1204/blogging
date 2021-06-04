@@ -1,0 +1,130 @@
+<?= $this->extend('Admin/admin_layout') ?>
+<?= $this->section('content') ?>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <?= view('Admin/templates/_notifications') ?>
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Groups</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="<?php echo base_url(route_to('admin_dashboard')); ?>">Home</a>
+                    </li>
+                    <li class="breadcrumb-item active">Groups</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><?php echo $title; ?> Lists</h3>
+                    <?php if (checkPermission($user, $permissions, 'create-group')) { ?>
+                        <div class="text-right">
+                            <a href="<?= base_url(route_to('new_group')) ?>" class="btn btn-default">
+                                <i class="fas fa-plus"></i> Add Group
+                            </a>
+                        </div>
+                    <?php } ?>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                    <table id="userUsers" class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (!empty($groups) && is_array($groups)) : ?>
+                            <?php foreach ($groups as $rowGroup): ?>
+                                <tr>
+                                    <td><?= $rowGroup['id'] ?></td>
+                                    <td>
+                                        <?php if (checkPermission($user, $permissions, 'edit-group')) { ?>
+                                            <a href="<?php echo base_url(route_to('edit_group', $rowGroup['id'])); ?>">
+                                                <?php echo $rowGroup['title'] ?>
+                                            </a>
+                                        <?php } else { ?>
+                                            <?php echo $rowGroup['title'] ?>
+                                        <?php } ?>
+                                    </td>
+                                    <td>
+                                        <?php echo $rowGroup['status'] == 1 ? 'Published' : 'Unpublished' ?>
+                                    </td>
+                                    <td>
+                                        <?php if (checkPermission($user, $permissions, 'edit-group')) { ?>
+                                            <a href="<?php echo base_url(route_to('edit_group', $rowGroup['id'])); ?>"
+                                               class="text-cyan">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        <?php } ?>
+                                        <?php if (checkPermission($user, $permissions, 'delete-group')) { ?>
+                                            <a href="#"
+                                               data-id="<?= $rowGroup['id'] ?>" class="text-danger deleteUser">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <tr>
+                                <td colspan="4"> Unable to find data!!</td>
+                            </tr>
+                        <?php endif ?>
+
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <?= $pager->links() ?>
+                <!-- /.card-body -->
+            </div>
+        </div>
+    </div>
+</section>
+<?= $this->endSection() ?>
+
+<?= $this->section('script') ?>
+<script type="text/javascript">
+    $(function () {
+        <?php if (checkPermission($user, $permissions, 'delete-group')) { ?>
+        $("#userUsers").on('click', '.deleteUser', function (e) {
+            e.preventDefault();
+            let id = $(this).data('id');
+            if (confirm('Are you sure to remove this record ?')) {
+                $.ajax({
+                    url: '<?php echo base_url('/admin/groups/'); ?>' + '/' + id,
+                    type: 'delete',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.success) {
+                            location.reload();
+                        }
+                    }
+                });
+            }
+        });
+        <?php } ?>
+
+    });
+</script>
+<?= $this->endSection() ?>
+
+
