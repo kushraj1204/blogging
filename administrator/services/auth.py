@@ -26,10 +26,6 @@ class AuthService:
             return {'data': False, 'message': 'Staff status has not been activated yet'}
         if not exists['is_active']:
             return {'data': False, 'message': 'User account is not activated yet'}
-        # _user = dict()
-        # _user['id'] = exists['id']
-        # _user['full_name'] = exists['first_name'] + ' ' + exists['last_name']
-        # _user['profile_image'] = exists['profile_image']
         exists['full_name'] = exists['first_name'] + ' ' + exists['last_name']
         exists['dob'] = str(exists['dob'])
         exists['last_login'] = str(exists['last_login'])

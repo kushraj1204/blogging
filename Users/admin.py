@@ -101,9 +101,6 @@ class CustomUserAdmin(UserAdmin):
     )
     search_fields = ()
     ordering = ("email",)
-    formfield_overrides = {
-        map_fields.AddressField: {'widget': map_widgets.GoogleMapsAddressWidget},
-    }
 
 
 admin.site.register(CustomUser, CustomUserAdmin)

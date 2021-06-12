@@ -12,11 +12,12 @@
         <!-- Sidebar user panel (optional) -->
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
             <div class="image">
-                <img src="{% static 'images/usericon.png' %}" class="img-circle elevation-2" style="height: 33.6px; object-fit: cover;"
+                <img src="{% static 'images/usericon.png' %}" class="img-circle elevation-2"
+                     style="height: 33.6px; object-fit: cover;"
                      alt="User Image">
             </div>
             <div class="info">
-                <a href="javascript: void(0);" class="d-block">Kush Raj Rimal</a>
+                <a href="javascript: void(0);" class="d-block">{{ request.session.loggedInUser.full_name }}</a>
             </div>
         </div>
 

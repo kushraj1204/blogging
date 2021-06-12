@@ -5,7 +5,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            {% if user %}
+            {% if postData.id.value %}
                 Edit User
             {% else %}
                 Add User
@@ -20,7 +20,7 @@
                                 <a href="{% url "adminHome" %}">Home</a>
                             </li>
                             <li class="breadcrumb-item active">
-                                {% if user %}
+                                {% if postData.id.value %}
                                     Edit User
                                 {% else %}
                                     Add User
@@ -100,7 +100,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="phone">Phone</label>
-                                <input type="text" id="phone" name="phone"
+                                <input type="number" id="phone" name="phone"
                                        class="form-control {% if postData.phone.error %}is-invalid{% endif %}"
                                        value="{{ postData.phone.value }}">
                                 {% if postData.phone.error %}
@@ -124,7 +124,8 @@
                                 <label for="address">Address</label>
                                 <input class="form-control {% if postData.address.error %}is-invalid{% endif %} {% if postData.address.error %}is-invalid{% endif %}"
                                        name="address" type="address"
-                                       value="{{ postData.address.value }}"
+                                       value="
+                                               {% if postData.address.value != None %}{{ postData.address.value }}{% endif %}"
                                        id="address">
 
                                 {% if postData.address.error %}
@@ -132,16 +133,16 @@
                                         {{ postData.address.error }}
                                     </div>
                                 {% endif %}
-                                <input type="text" id="lat" name="lat" value="{{ postData.lat.value }}"
-                                       placeholder="Latitude" hidden>
+                                <input type="hidden" id="lat" name="lat" value="{{ postData.lat.value }}"
+                                       placeholder="Latitude">
                                 {% if postData.lat.error %}
                                     <div class="invalid-feedback">
                                         {{ postData.lat.error }}
                                     </div>
                                 {% endif %}
 
-                                <input type="text" id="lng" name="lng" value="{{ postData.lng.value }}"
-                                       placeholder="Longitude" hidden>
+                                <input type="hidden" id="lng" name="lng" value="{{ postData.lng.value }}"
+                                       placeholder="Longitude">
                                 <div id="map" style="height: 400px;width: 100%;"></div>
                             </div>
                             {% if postData.lng.error %}
@@ -150,27 +151,40 @@
                                 </div>
                             {% endif %}
                             <div class="form-group">
+
                                 <div class="custom-file">
-                                    <input type="file" id="profile_image" name="profile_image" class="custom-file-input"
+                                    <input type="file" id="image" name="image" class="custom-file-input"
                                            accept=".png, .jpg, .jpeg">
-                                    <label for="profile_image" class="custom-file-label">Choose Image</label>
+                                    <label for="image" class="custom-file-label">Choose Image</label>
+                                </div>
+                                <div class="spinner-border text-primary imageuploadspinner" role="status"
+                                     style="display: none">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                                <div class="p-1 newprofileimage" style="display: none">
+                                    <img id="newprofileimagepreview" src="{% static 'images/icon.png' %}" class=""
+                                         width="200"
+                                         height="150"/>
+                                    <button type="button" class="close" aria-label="Close" id="removeUploadedPhoto">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
                                 </div>
 
-
-                                {% comment %}    {% if postData.profile_image %}
-                                    <div class="p-1">
-                                        <input type="hidden" name="profile_image" value="{{ postData.profile_image }}">
-                                        <img id="preview" src="{% static postData.profile_image %}" class="" width="200"
+                                <input type="hidden" name="profile_image" id="profile_image"
+                                       value="{{ postData.profile_image.value }}">
+                                <input id="profile_image_path" type="hidden"
+                                       value="{{ postData.profile_image.value }}" readonly>
+                                {% if postData.profile_image %}
+                                    <div class="p-1 savedprofileimage">
+                                        <img id="preview" src="{{ MEDIA_URL }}{{ postData.profile_image.value }}"
+                                             class=""
+                                             width="200"
                                              height="150"/>
                                     </div>
                                 {% else %}
-                                    <div class="p-1">
-                                        <input type="hidden" name="profile_image" value="">
-                                        <img id="preview" src="{% static 'images/icon.png' %}" class="" width="200"
-                                             height="150"/>
-                                    </div>
+
                                 {% endif %}
-                            {% endcomment %}
+
                             </div>
                         </div>
                         <!-- /.card-body -->
@@ -229,45 +243,72 @@
 
                             <div class="form-group">
                                 <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-                                    <input type="checkbox" class="custom-control-input" value="1" name="is_superuser"
-                                           id="is_superuser" {% if postData.is_superuser.value %} checked{% endif %}>
-                                    <label class="custom-control-label" for="is_superuser">Is Superuser</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-                                    <input type="checkbox" class="custom-control-input" value="1" name="is_staff"
-                                           id="is_staff" {% if postData.is_staff.value %} checked{% endif %}>
-                                    <label class="custom-control-label" for="is_staff">Is Staff</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-                                    <input type="checkbox" class="custom-control-input" value="1" name="is_active"
-                                           id="is_active" {% if postData.is_active.value %} checked{% endif %}>
-                                    <label class="custom-control-label" for="is_active">Is Active</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-                                    <input type="checkbox" class="custom-control-input" value="1" name="phone_activated"
-                                           id="phone_activated" {% if postData.phone_activated.value %}
+                                    <input type="checkbox" class="custom-control-input"
+                                           value="{% if postData.is_superuser.value %} 1 {% else %} 0{% endif %}"
+                                           name="is_superuser_chkbox"
+                                           id="is_superuser_chkbox" {% if postData.is_superuser.value %}
                                            checked{% endif %}>
-                                    <label class="custom-control-label" for="phone_activated">Phone Verified</label>
+                                    <label class="custom-control-label" for="is_superuser_chkbox">Is Superuser</label>
+                                    <input type="hidden" id="is_superuser" name="is_superuser"
+                                           value="{{ postData.is_superuser.value }}">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-                                    <input type="checkbox" class="custom-control-input" value="1" name="sendEmail"
-                                           id="sendEmail" {% if postData.sendEmail.value %} checked{% endif %}>
-                                    <label class="custom-control-label" for="sendEmail">Send Emails</label>
+                                    <input type="checkbox" class="custom-control-input"
+                                           value="{% if postData.is_staff.value %} 1 {% else %} 0{% endif %}"
+                                           name="is_staff_chkbox"
+                                           id="is_staff_chkbox" {% if postData.is_staff.value %} checked{% endif %}>
+                                    <label class="custom-control-label" for="is_staff_chkbox">Is Staff</label>
+                                    <input type="hidden" id="is_staff" name="is_staff"
+                                           value="{{ postData.is_staff.value }}">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-                                    <input type="checkbox" class="custom-control-input" value="1" name="sendSMS"
-                                           id="sendSMS" {% if postData.sendSMS.value %} checked{% endif %}>
-                                    <label class="custom-control-label" for="sendSMS">Send SMS</label>
+                                    <input type="checkbox" class="custom-control-input"
+                                           name="is_active_chkbox"
+                                           value="{% if postData.is_active.value %} 1 {% else %} 0{% endif %}"
+                                           id="is_active_chkbox" {% if postData.is_active.value %} checked{% endif %}>
+                                    <label class="custom-control-label" for="is_active_chkbox">Is Active</label>
+                                    <input type="hidden" id="is_active" name="is_active"
+                                           value="{{ postData.is_active.value }}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input"
+                                           name="phone_activated_chkbox"
+                                           value="{% if postData.phone_activated.value %} 1 {% else %} 0{% endif %}"
+                                           id="phone_activated_chkbox" {% if postData.phone_activated.value %}
+                                           checked{% endif %}>
+                                    <label class="custom-control-label" for="phone_activated_chkbox">Phone
+                                        Verified</label>
+                                    <input type="hidden" id="phone_activated" name="phone_activated"
+                                           value="{{ postData.phone_activated.value }}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input"
+                                           name="sendEmail_chkbox"
+                                           value="{% if postData.sendEmail.value %} 1 {% else %} 0{% endif %}"
+                                           id="sendEmail_chkbox" {% if postData.sendEmail.value %} checked{% endif %}>
+                                    <label class="custom-control-label" for="sendEmail_chkbox">Send Emails</label>
+                                    <input type="hidden" id="sendEmail" name="sendEmail"
+                                           value="{{ postData.sendEmail.value }}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input"
+                                           value="{% if postData.sendSMS.value %} 1 {% else %} 0{% endif %}"
+                                           name="sendSMS_chkbox"
+                                           id="sendSMS_chkbox" {% if postData.sendSMS.value %} checked{% endif %}>
+                                    <label class="custom-control-label" for="sendSMS_chkbox">Send SMS</label>
+                                    <input type="hidden" id="sendSMS" name="sendSMS"
+                                           value="{{ postData.sendSMS.value }}">
+
                                 </div>
                             </div>
 
@@ -275,14 +316,44 @@
                         <!-- /.card-body -->
                     </div>
 
-
                     <!-- /.card -->
-                </div>
 
+
+                </div>
+                <div class="col-md-12">
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">User Groups</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {{ user_groups }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">User Permissions</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {{ user_permissions }}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="pb-5">
-                <a href="<?php echo base_url(route_to('list_users')); ?>" class="btn btn-secondary">Cancel</a>
+                <a href="{% url 'adminUsers' %}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-success">{% if postData.id.value %}Update{% else %}Save{% endif %}
                 </button>
             </div>
@@ -290,26 +361,66 @@
     </section>
     <!-- /.content -->
 {% endblock %}
-{% block script %}
-    <script async defer
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAftlPuppWtwjk-fBUQelgJmPtNFQ81_WA&libraries=places"></script>
+{% block styles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'js/bootstrap-duallistbox/bootstrap-duallistbox.css' %}">
 
+{% endblock %}
+{% block script %}
+
+
+    {#    <script src="{% static 'js/addressPicker.js' %}"></script>#}
+    <script src="{% static 'js/bootstrap-duallistbox-master/bootstrap-duallistbox-master/dist/jquery.bootstrap-duallistbox.js' %}"></script>
+    {#    <script async defer#}
+    {#            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAftlPuppWtwjk-fBUQelgJmPtNFQ81_WA&libraries=places&callback=gMapInit"></script>#}
+    {#    #}
     <script>
         $(document).ready(function () {
+            $('#id_groups').bootstrapDualListbox({
+                nonSelectedListLabel: 'Non-selected',
+                selectedListLabel: 'Selected',
+                preserveSelectionOnMove: 'moved',
+                moveOnSelect: false,
+                moveAllLabel: 'Move all',
+                removeAllLabel: 'Remove all'
+
+            });
+            $('#id_user_permissions').bootstrapDualListbox({
+                nonSelectedListLabel: 'Non-selected',
+                selectedListLabel: 'Selected',
+                preserveSelectionOnMove: 'moved',
+                moveOnSelect: false,
+                moveAllLabel: 'Move all',
+                removeAllLabel: 'Remove all'
+            });
             removeInvalidClass();
             checkBoxControls();
             profileImageUpload();
             usernameAuto();
-            {#new addressPicker({#}
-            {#    'lat':{{postData.lat}},#}
-            {#    'lng':{{ postData.lat }},#}
-            {#    'mapid': 'map',#}
-            {#    'latid': 'lat',#}
-            {#    'lngid': 'lng',#}
-            {#    'addressid': 'addressid'#}
+            onformSubmit();
+            $('#removeUploadedPhoto').click(function () {
+                var r = confirm("Are you sure?? The uploaded  image will be discarded.");
+                if (r == true) {
+                    $(".newprofileimage").hide(); // Display image element
+                    $(".savedprofileimage").show();
+                    $("#profile_image").val($("#profile_image_path").val()) // Display image element
 
+                } else {
 
+                }
+            })
         });
+
+        function onformSubmit() {
+            $("form").submit(function () {
+                {#$(this).children('#is_superuser_chkbox').prop('disabled', true);#}
+                {#$(this).children('#is_staff_chkbox').prop('disabled', true);#}
+                {#$(this).children('#is_active_chkbox').prop('disabled', true);#}
+                {#$(this).children('#phone_activated_chkbox').prop('disabled', true);#}
+                {#$(this).children('#sendEmail_chkbox').prop('disabled', true);#}
+                {#$(this).children('#sendSMS_chkbox').prop('disabled', true);#}
+                {#$(this).children('#image').prop('disabled', true);#}
+            });
+        }
 
         function usernameAuto() {
             $('#email').on('change', function () {
@@ -320,12 +431,13 @@
         }
 
         function profileImageUpload() {
-            $("#profile_image").change(function () {
+            $("#image").change(function () {
                 var fd = new FormData();
-                var files = $('#profile_image')[0].files;
+                var files = $('#image')[0].files;
 
                 // Check file selected or not
                 if (files.length > 0) {
+                    $(".imageuploadspinner").show();
                     fd.append('file', files[0]);
                     fd.append('csrfmiddlewaretoken', '{{csrf_token}}');
                     $.ajax({
@@ -336,10 +448,16 @@
                         processData: false,
                         success: function (response) {
                             if (response != 0) {
-                                $("#img").attr("src", response);
+                                $("#newprofileimagepreview").attr("src", {{ MEDIA_URL }}+response.data.saved_filename);
+                                $(".newprofileimage").show(); // Display image element
+                                $(".savedprofileimage").hide();
+                                $(".imageuploadspinner").hide();
                                 $(".preview img").show(); // Display image element
+                                $("#profile_image").val(response.data.saved_filename); // Display image element
+
                             } else {
                                 alert('file not uploaded');
+                                $(".imageuploadspinner").hide();
                             }
                         },
                     });
@@ -360,120 +478,26 @@
         function checkBoxControls() {
             $('input[type=checkbox]').on('change', function () {
                 var id = this.id;
+                var inputid = id.replace('_chkbox', '')
                 var prevState = $('#' + id).val();
+                console.log(prevState)
                 $('#' + id).val((prevState == 1) ? 0 : 1);
+                $('#' + inputid).val((prevState == 1) ? 'False' : 'True');
                 {#$('#' + id).prop('checked', (prevState == 1) ? false : true);#}
             });
         }
 
-        class addressPicker {
-            constructor(props) {
-                console.log(props, 'props hai')
-                this.map = '';
-                this.infoWindow = '';
-                this.marker = '';
-                this.address = '';
-                this.autocomplete = '';
-                this.geocoder = '';
-                this.pos = {
-                    lat: props.lat,
-                    lng: props.lng
-                };
-                this.mapid = props.mapid;
-                this.addressid = props.addressid;
-                this.latid = props.latid;
-                this.lngid = props.lngid;
-                this.initMap();
-            }
-
-
-            initMap() {
-                this.geocoder = new google.maps.Geocoder;
-                this.map = new google.maps.Map(
-                    document.getElementById(this.mapid), {
-                        zoom: 14,
-                        center: this.pos
-                    });
-                this.detectLocation();
-                this.autocomplete = new google.maps.places.Autocomplete(document.getElementById('address'));
-                this.places = new google.maps.places.PlacesService(this.map);
-                this.autocomplete.addListener('place_changed', this.onPlaceChanged);
-            }
-
-            detectLocation() {
-                this.infoWindow = new google.maps.InfoWindow;
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function (position) {
-                        this.pos = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        };
-                        this.infoWindow.setPosition(pos);
-                        document.getElementById(this.latid).value = this.pos.lat;
-                        document.getElementById(this.lngid).value = this.pos.lng;
-                        this.marker = new google.maps.Marker({
-                            position: this.pos,
-                            map: this.map,
-                            draggable: true
-                        });
-                        this.marker.addListener('dragend', this.handleEvent);
-                        this.map.setCenter(this.pos);
-                    }, function () {
-                        this.handleLocationError(true, this.infoWindow, this.map.getCenter());
-                    });
-                } else {
-                    // Browser doesn't support Geolocation
-                    this.handleLocationError(false, this.infoWindow, this.map.getCenter());
-                }
-            }
-
-            handleLocationError(browserHasGeolocation, infoWindow, pos) {
-                infoWindow.setPosition(pos);
-                infoWindow.setContent(browserHasGeolocation ?
-                    'Error: The Geolocation service failed.' :
-                    'Error: Your browser doesn\'t support geolocation.');
-                infoWindow.open(this.map);
-            }
-
-            handleEvent(event) {
-                document.getElementById('latitude').value = event.latLng.lat();
-                document.getElementById('longitude').value = event.latLng.lng();
-                geocodeLatLng(event.latLng.lat(), event.latLng.lng());
-            }
-
-            onPlaceChanged() {
-                var place = this.autocomplete.getPlace();
-                if (place.geometry) {
-                    map.panTo(place.geometry.location);
-                    let latlng = new google.maps.LatLng(map.getCenter().lat(), map.getCenter().lng());
-                    marker.setPosition(latlng);
-                    document.getElementById('latitude').value = map.getCenter().lat();
-                    document.getElementById('longitude').value = map.getCenter().lng();
-                    map.setZoom(14);
-                } else {
-                    document.getElementById('autocomplete').placeholder = 'Enter a city';
-                }
-            }
-
-            geocodeLatLng(lat, lng) {
-                var latlng = {lat: lat, lng: lng};
-                this.geocoder.geocode({'location': latlng}, function (results, status) {
-                    if (status === 'OK') {
-                        if (results[0]) {
-                            document.getElementById(this.addressId).value = results[0].formatted_address;
-                        } else {
-                            window.alert('Error parsing Address');
-                        }
-                    } else {
-                        window.alert('Geocoder failed due to: ' + status);
-                    }
-                });
-            }
+        function gMapInit() {
+            new addressPicker({
+                'lat':{{postData.lat.value}},
+                'lng':{{ postData.lng.value }},
+                'mapid': 'map',
+                'latid': 'lat',
+                'lngid': 'lng',
+                'addressid': 'address',
+                'allowMarkerDrag': true
+            });
         }
 
-
     </script>
-
-
-
 {% endblock %}

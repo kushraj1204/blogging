@@ -14,6 +14,7 @@ class BaseAdminView(View):
         if request.session.get('loggedInUser') is None:
             return redirect('adminLogin')
         else:
+            # print(request.session.get('loggedInUser'))
             id = request.session.get('loggedInUser')['id']
             user = vars(CustomUser.objects.get(pk=id))
             auth_service = AuthService()

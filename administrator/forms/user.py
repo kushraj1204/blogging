@@ -1,3 +1,5 @@
+from django.contrib.admin.widgets import FilteredSelectMultiple
+from django import forms
 from django.forms import ModelForm
 from Users.models import CustomUser
 from django.core.exceptions import ValidationError
@@ -42,3 +44,9 @@ class UserUpdateForm(ModelForm):
     class Meta:
         model = CustomUser
         exclude = ['last_login', 'date_joined', 'activation', 'phone_activation_code', 'password']
+        widgets = {
+            'user_permissions': FilteredSelectMultiple("Permissions", is_stacked=False),
+            'groups': FilteredSelectMultiple("Groups", is_stacked=False),
+        }
+
+

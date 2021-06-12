@@ -86,13 +86,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def fromdict(self, datadict):
         if datadict:
             for dict_key, value in datadict.items():
-                print(value)
-                print('this is value')
-                print(dict_key)
-                print('separation')
                 self.dict_key = value
                 print(self.dict_key)
-
+        print(self)
 
     def save(self, *args, **kwargs):
         if not self.username:
@@ -104,13 +100,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         if not self.last_login:
             self.last_login = timezone.now()
         self.last_login = timezone.now()
-        super(CustomUser, self).save(*args, **kwargs)
-
-    def saveUser(self):
         try:
-            id = super(CustomUser, self).save()
-            print(id)
-            return True
+            super(CustomUser, self).save(*args, **kwargs)
+            return self.pk
         except Exception as e:
             print(e)
-            return False
+            return 0

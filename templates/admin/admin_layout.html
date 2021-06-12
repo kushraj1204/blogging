@@ -30,8 +30,12 @@
 </div>
 <!-- Main Footer -->
 {% include "admin/templates/footer.html" %}
+
 {% block script %}
 {% endblock script %}
+{% block styles %}
+
+{% endblock styles %}
 <script>
     $('.signOutButton').off('click').on('click', function (e) {
         e.preventDefault();

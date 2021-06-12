@@ -1,25 +1,38 @@
-<?= $this->extend('Admin/admin_layout') ?>
-<?= $this->section('content') ?>
+{% extends "admin/admin_layout.html" %}
+{% load static %}
+{% load custom_tags %}
+{% block content %}
     <!-- Content Header (Page header) -->
     <section class="content-header">
-        <h1><?php echo !empty($group['id']) ? 'Edit' : 'Add'; ?> Group</h1>
+        <h1>
+            {% if postData.id.value %}
+                Edit Group
+            {% else %}
+                Add Group
+            {% endif %}
+        </h1>
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6 pull-left">
                     <div class="row breadcrumb ">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="<?php echo base_url(route_to('admin_dashboard')); ?>">Home</a>
+                            <li class="breadcrumb-item">
+                                <a href="{% url "adminHome" %}">Home</a>
                             </li>
-                            <li class="breadcrumb-item active"><?php echo !empty($group['id']) ? 'Edit' : 'Add'; ?>
-                                Group
+                            <li class="breadcrumb-item active">
+                                {% if postData.id.value %}
+                                    Edit Group
+                                {% else %}
+                                    Add Group
+                                {% endif %}
                             </li>
                         </ol>
                     </div>
                 </div>
                 <div class="col-sm-6">
                     <div class="row float-sm-right">
-                        <a href="<?php echo base_url(route_to('list_groups')); ?>" class="btn btn-default"><i
-                                    class="fa fa-angle-left"></i> Back</a>
+                        <a href="{% url 'adminGroups' %}" class="btn btn-default"><i
+                                class="fa fa-angle-left"></i> Back</a>
                     </div>
                 </div>
             </div>
@@ -29,10 +42,15 @@
 
     <!-- Main content -->
     <section class="content">
-        <form action="<?php echo $form_action; ?>" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+        <div class="help-block">
+            {#            <?php $validation = \Config\Services::validation();#}
+            {#             echo ($validation->listErrors()) ?: ''; ?>#}
+        </div>
+
+        <form action="{% url 'adminGroupDetail' pk=postData.id.value %}" method="post" accept-charset="utf-8"
+              enctype="multipart/form-data">
             <div class="row">
-                <?= csrf_field() ?>
-                <input type="hidden" id="inputId" name="id" class="form-control" value="<?= $group['id'] ?>">
+                {% csrf_token %}
                 <div class="col-md-6">
                     <div class="card card-primary">
                         <div class="card-header">
@@ -45,40 +63,79 @@
                         </div>
                         <div class="card-body">
                             <div class="form-group">
-                                <label for="inputTitle">Title</label>
-                                <input type="text" id="inputTitle" name="title" class="form-control"
-                                       value="<?= $group['title'] ?>">
+                                <label for="first_name">Name</label>
+                                <input type="hidden" id="id" name="id" class="form-control"
+                                       value="{{ postData.id.value }}">
+                                <input type="text" id="name" name="name"
+                                       class="form-control {% if postData.name.error %}is-invalid{% endif %}"
+                                       value="{{ postData.name.value }}">
+                                {% if postData.name.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.name.error }}
+                                    </div>
+                                {% endif %}
+
                             </div>
-                            <div class="form-group">
-                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-                                    <input type="checkbox" class="custom-control-input" value="1" name="homepage"
-                                           id="homepage" <?php echo $group['homepage'] == 1 ? 'checked' : ''; ?>>
-                                    <label class="custom-control-label" for="homepage">Display in homepage</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
-                                    <input type="checkbox" class="custom-control-input" value="1" name="status"
-                                           id="status" <?php echo !isset($group['status']) || $group['status'] == 1 ? 'checked' : ''; ?>>
-                                    <label class="custom-control-label" for="status">Published</label>
-                                </div>
-                            </div>
+
                         </div>
                         <!-- /.card-body -->
                     </div>
                     <!-- /.card -->
                 </div>
-                <div class="col-md-6"></div>
 
+
+                <div class="col-md-12">
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">Group Permissions</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {{ permissions }}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="pb-5">
-                <a href="<?php echo base_url(route_to('list_groups')); ?>" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-success"><?php echo !empty($group['id']) ? 'Edit' : 'Add'; ?>
-                    Group
+                <a href="{% url 'adminGroups' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">{% if postData.id.value %}Update{% else %}Save{% endif %}
                 </button>
             </div>
         </form>
     </section>
     <!-- /.content -->
-<?= $this->endSection() ?>
+{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'js/bootstrap-duallistbox/bootstrap-duallistbox.css' %}">
+
+{% endblock %}
+{% block script %}
+
+
+    {#    <script src="{% static 'js/addressPicker.js' %}"></script>#}
+    <script src="{% static 'js/bootstrap-duallistbox-master/bootstrap-duallistbox-master/dist/jquery.bootstrap-duallistbox.js' %}"></script>
+    {#    <script async defer#}
+    {#            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAftlPuppWtwjk-fBUQelgJmPtNFQ81_WA&libraries=places&callback=gMapInit"></script>#}
+    {#    #}
+    <script>
+        $(document).ready(function () {
+
+            $('#id_permissions').bootstrapDualListbox({
+                nonSelectedListLabel: 'Non-selected',
+                selectedListLabel: 'Selected',
+                preserveSelectionOnMove: 'moved',
+                moveOnSelect: false,
+                moveAllLabel: 'Move all',
+                removeAllLabel: 'Remove all'
+            });
+
+        });
+
+
+    </script>
+{% endblock %}
