@@ -8,8 +8,10 @@ from django.contrib.auth.models import Group
 from Users.models import CustomUser
 from datetime import date
 
+from administrator.services.base import BaseService
 
-class GroupService():
+
+class GroupService(BaseService):
 
     def getAll(self, keyword):
         users = CustomUser.objects.all().filter(

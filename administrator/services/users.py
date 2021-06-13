@@ -8,10 +8,13 @@ from django.contrib.auth.models import Group
 from Users.models import CustomUser
 from datetime import date
 
+from administrator.services.base import BaseService
 
-class UserService():
+
+class UserService(BaseService):
 
     def getAll(self, keyword):
+
         users = CustomUser.objects.all().filter(
             Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword) | Q(email__icontains=keyword) | Q(
                 username__icontains=keyword) | Q(phone__icontains=keyword)).order_by('-id')
@@ -71,19 +74,3 @@ class UserService():
                 pass
         return {'id': pk if pk else 0, 'success': False}
 
-    def getPostData(self, post_data, errors):
-        return_data = dict()
-        for datakey, eachdata in post_data.items():
-            return_data[datakey] = dict()
-            field_dict = dict()
-            field_dict['value'] = eachdata
-            field_dict['error'] = None
-            if errors:
-                for errorkey, eacherror in errors.items():
-                    try:
-                        if datakey == errorkey:
-                            field_dict['error'] = eacherror[0]['message']
-                    except:
-                        pass
-            return_data[datakey] = field_dict
-        return return_data

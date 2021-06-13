@@ -14,4 +14,5 @@ urlpatterns = [
     path('group/add_new', views.GroupView.add_group, name='adminAddGroup'),
     path('group/delete', views.GroupView.delete_group, name='adminDeleteGroup'),
     path('user/imageupload', views.Images.as_view(), name='userImageUpload'),
+    path('settings', views.SettingsView.as_view(), name='adminSettings'),
 ]

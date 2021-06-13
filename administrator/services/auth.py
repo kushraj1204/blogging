@@ -4,9 +4,10 @@ import datetime
 from django.utils import timezone
 
 from Users.models import CustomUser
+from administrator.services.base import BaseService
 
 
-class AuthService:
+class AuthService(BaseService):
 
     def login(self, username, password):
         exists = CustomUser.objects.filter(
@@ -21,15 +22,3 @@ class AuthService:
 
         return {'data': False, 'message': 'Incorrect username password combination'}
 
-    def affirm_user_access(self, exists):
-        if not exists['is_staff']:
-            return {'data': False, 'message': 'Staff status has not been activated yet'}
-        if not exists['is_active']:
-            return {'data': False, 'message': 'User account is not activated yet'}
-        exists['full_name'] = exists['first_name'] + ' ' + exists['last_name']
-        exists['dob'] = str(exists['dob'])
-        exists['last_login'] = str(exists['last_login'])
-        exists['date_joined'] = str(exists['date_joined'])
-        exists['lat'] = str(exists['lat'])
-        exists['lng'] = str(exists['lng'])
-        return {'data': exists, 'message': 'Username and password matched'}

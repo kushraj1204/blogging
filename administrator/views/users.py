@@ -13,6 +13,9 @@ import json
 
 
 class Users(BaseAdminView):
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs, session_menu='User', session_submenu='',
+                                permission_required=[])
 
     def get(self, request):
         keyword = request.GET.get('keyword')
@@ -30,6 +33,9 @@ class Users(BaseAdminView):
 
 
 class User(BaseAdminView):
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs, session_menu='User', session_submenu='',
+                                permission_required=[])
 
     @classmethod
     def add_user(cls, request):
@@ -120,7 +126,8 @@ class User(BaseAdminView):
             print(errors)
             post_data = user_service.getPostData(post_data, errors)
             return render(request, 'admin/users/add_user.html',
-                          {'postData': post_data, 'user_groups': user_groups, 'user_permissions': user_permissions})
+                          {'postData': post_data, 'user_groups': user_groups if pk > 0 else None,
+                           'user_permissions': user_permissions if pk > 0 else None})
 
     def get_filtered_input(self, post_data):
         return_data = dict()

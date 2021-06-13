@@ -1,292 +1,118 @@
-<?= $this->extend('Admin/admin_layout') ?>
-<?= $this->section('content') ?>
-<section class="content-header">
-    <h1>Settings</h1>
-    <div class="container-fluid"></div>
-</section>
+{% extends "admin/admin_layout.html" %}
+{% load static %}
+{% load custom_tags %}
+{% block content %}
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
 
-<!-- Main content -->
-<section class="content">
-    <div class="help-block">
-        <?php $validation = \Config\Services::validation();
-        echo ($validation->listErrors()) ?: ''; ?>
-    </div>
-    <form action="<?php echo $form_action; ?>" method="post" accept-charset="utf-8" enctype="multipart/form-data">
-        <div class="row">
-            <?= csrf_field() ?>
-            <div class="col-md-6">
-                <div class="card card-primary">
-                    <div class="card-header">
-                        <h3 class="card-title">Number Formatting</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse"
-                                    data-toggle="tooltip" title="Collapse">
-                                <i class="fas fa-minus"></i></button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label for="inputSymbol">Currency Symbol</label>
-                            <input type="text" id="inputSymbol" name="currency_symbol"
-                                   class="form-control"
-                                   value="<?php echo $settings['currency_symbol']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="inputDecimalSymbol">Decimal Symbol</label>
-                            <input type="text" id="inputDecimalSymbol" name="decimal_symbol"
-                                   class="form-control"
-                                   value="<?php echo $settings['decimal_symbol']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="inputValueSymbol">Value Separator</label>
-                            <input type="text" id="inputValueSymbol" name="value_separator"
-                                   class="form-control"
-                                   value="<?php echo $settings['value_separator']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="inputDecimalNumberSymbol">Decimal Number</label>
-                            <input type="text" id="inputDecimalNumberSymbol" name="decimal_number"
-                                   class="form-control"
-                                   value="<?php echo $settings['decimal_number']; ?>">
-                        </div>
+                Settings
+        </h1>
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6 pull-left">
+                    <div class="row breadcrumb ">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{% url "adminHome" %}">Home</a>
+                            </li>
+                            <li class="breadcrumb-item active">
+                                Settings
+                            </li>
+                        </ol>
                     </div>
                 </div>
-                <div class="card card-secondary">
-                    <div class="card-header">
-                        <h3 class="card-title">Page / Address</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse"
-                                    data-toggle="tooltip" title="Collapse">
-                                <i class="fas fa-minus"></i></button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label for="inputPageLimit">Page Limit</label>
-                            <input type="text" id="inputPageLimit" name="page_limit"
-                                   class="form-control"
-                                   value="<?php echo $settings['page_limit']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="inputAddress">Address</label>
-                            <input type="text" id="inputAddress" name="address"
-                                   class="form-control"
-                                   value="<?php echo $settings['address']; ?>">
-                        </div>
-                    </div>
-                </div>
-                <div class="card card-secondary">
-                    <div class="card-header">
-                        <h3 class="card-title">Ads</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse"
-                                    data-toggle="tooltip" title="Collapse">
-                                <i class="fas fa-minus"></i></button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label for="inputAd1">Ad1 Image</label>
-                            <div class="custom-file">
-                                <input type="file" id="inputAd1" name="ad1_image" class="custom-file-input"
-                                       onchange="swapImage(this, '#ad1_preview');" accept=".png, .jpg, .jpeg">
-                                <label for="inputAd1" class="custom-file-label">Choose Image</label>
-                            </div>
-
-                            <?php if (!empty($settings['ad1_image'])) {
-                                $image = base_url('/uploads/settings/' . $settings['ad1_image']); ?>
-                                <input type="hidden" name="ad1_oldImage" value="<?php echo $settings['ad1_image']; ?>">
-                            <?php } else {
-                                $image = base_url('/img/image-preview.png'); ?>
-                            <?php } ?>
-                            <div class="p-1">
-                                <img id="ad1_preview" src="<?php echo $image; ?>" class="" width="200" height="150"/>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="inputAd2">Ad2 Image</label>
-                            <div class="custom-file">
-                                <input type="file" id="inputAd2" name="ad2_image" class="custom-file-input"
-                                       onchange="swapImage(this, '#ad2_preview');" accept=".png, .jpg, .jpeg">
-                                <label for="inputAd2" class="custom-file-label">Choose Image</label>
-                            </div>
-
-                            <?php if (!empty($settings['ad2_image'])) {
-                                $image = base_url('/uploads/settings/' . $settings['ad2_image']); ?>
-                                <input type="hidden" name="ad2_oldImage" value="<?php echo $settings['ad2_image']; ?>">
-                            <?php } else {
-                                $image = base_url('/img/image-preview.png'); ?>
-                            <?php } ?>
-                            <div class="p-1">
-                                <img id="ad2_preview" src="<?php echo $image; ?>" class="" width="200" height="150"/>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="inputAd3">Ad3 Image</label>
-                            <div class="custom-file">
-                                <input type="file" id="inputAd3" name="ad3_image" class="custom-file-input"
-                                       onchange="swapImage(this, '#ad3_preview');" accept=".png, .jpg, .jpeg">
-                                <label for="inputAd3" class="custom-file-label">Choose Image</label>
-                            </div>
-
-                            <?php if (!empty($settings['ad3_image'])) {
-                                $image = base_url('/uploads/settings/' . $settings['ad3_image']); ?>
-                                <input type="hidden" name="ad3_oldImage" value="<?php echo $settings['ad3_image']; ?>">
-                            <?php } else {
-                                $image = base_url('/img/image-preview.png'); ?>
-                            <?php } ?>
-                            <div class="p-1">
-                                <img id="ad3_preview" src="<?php echo $image; ?>" class="" width="200" height="150"/>
-                            </div>
-                        </div>
+                <div class="col-sm-6">
+                    <div class="row float-sm-right">
+                        <a href="{% url 'adminHome' %}" class="btn btn-default"><i
+                                class="fa fa-angle-left"></i> Back</a>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card card-secondary">
-                    <div class="card-header">
-                        <h3 class="card-title">Firebase Push-notification (Customer App)</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse"
-                                    data-toggle="tooltip" title="Collapse">
-                                <i class="fas fa-minus"></i></button>
+        </div>
+
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="help-block">
+            {#            <?php $validation = \Config\Services::validation();#}
+            {#             echo ($validation->listErrors()) ?: ''; ?>#}
+        </div>
+
+        <form action="{% url 'adminSettings' %}" method="post" accept-charset="utf-8"
+              enctype="multipart/form-data">
+            <div class="row">
+                {% csrf_token %}
+                <div class="col-md-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Settings</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
                         </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="page_limit">Name</label>
+                                <input type="hidden" id="id" name="id" class="form-control"
+                                       value="{{ postData.id.value }}">
+                                <input type="number" id="page_limit" name="page_limit"
+                                       class="form-control {% if postData.page_limit.error %}is-invalid{% endif %}"
+                                       value="{{ postData.page_limit.value }}">
+                                {% if postData.page_limit.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.page_limit.error }}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+                            <div class="form-group">
+                                <label for="google_maps_api_key">Google Maps Api Key</label>
+                                <input type="hidden" id="id" name="id" class="form-control"
+                                       value="{{ postData.google_maps_api_key.value }}">
+                                <input type="text" id="google_maps_api_key" name="google_maps_api_key"
+                                       class="form-control {% if postData.google_maps_api_key.error %}is-invalid{% endif %}"
+                                       value="{{ postData.google_maps_api_key.value }}">
+                                {% if postData.google_maps_api_key.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.google_maps_api_key.error }}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+                        <!-- /.card-body -->
                     </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label for="google_api_access_key">Api Access Key</label>
-                            <input type="text" id="api_access_key" name="api_access_key"
-                                   class="form-control"
-                                   value="<?php echo $settings['api_access_key']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="google_api_access_key_ios">Api Access Key - ios</label>
-                            <input type="text" id="api_access_key_ios" name="api_access_key_ios"
-                                   class="form-control"
-                                   value="<?php echo $settings['api_access_key_ios']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="fcm_url">FCM Url</label>
-                            <input type="text" id="fcm_url" name="fcm_url"
-                                   class="form-control"
-                                   value="<?php echo $settings['fcm_url']; ?>">
-                        </div>
-                    </div>
+                    <!-- /.card -->
                 </div>
-                <div class="card card-secondary">
-                    <div class="card-header">
-                        <h3 class="card-title">Firebase Push-notification (Operator App)</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse"
-                                    data-toggle="tooltip" title="Collapse">
-                                <i class="fas fa-minus"></i></button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label for="google_api_access_key">Api Access Key</label>
-                            <input type="text" id="api_access_key_operator" name="api_access_key_operator"
-                                   class="form-control"
-                                   value="<?php echo $settings['api_access_key_operator']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="google_api_access_key">Api Access Key - ios</label>
-                            <input type="text" id="api_access_key_operator_ios" name="api_access_key_operator_ios"
-                                   class="form-control"
-                                   value="<?php echo $settings['api_access_key_operator_ios']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="fcm_url">FCM Url</label>
-                            <input type="text" id="fcm_url_operator" name="fcm_url_operator"
-                                   class="form-control"
-                                   value="<?php echo $settings['fcm_url_operator']; ?>">
-                        </div>
-                    </div>
-                </div>
-                <div class="card card-secondary">
-                    <div class="card-header">
-                        <h3 class="card-title">Google Api (Map)</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse"
-                                    data-toggle="tooltip" title="Collapse">
-                                <i class="fas fa-minus"></i></button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label for="google_api_key">Api Key</label>
-                            <input type="text" id="google_api_key" name="google_api_key"
-                                   class="form-control"
-                                   value="<?php echo $settings['google_api_key']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="google_radius">Default Radius (km)</label>
-                            <input type="number" min="0" id="google_radius" name="radius"
-                                   class="form-control"
-                                   value="<?php echo $settings['radius']; ?>">
-                        </div>
-                    </div>
-                </div>
-                <div class="card card-secondary">
-                    <div class="card-header">
-                        <h3 class="card-title">Image Dimensions</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse"
-                                    data-toggle="tooltip" title="Collapse">
-                                <i class="fas fa-minus"></i></button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label for="thumb_height">Thumb Image Height</label>
-                            <input type="number" id="thumb_height" name="thumb_height"
-                                   class="form-control" min="1" required
-                                   value="<?php echo $imageDimension['thumb_height']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="thumb_width">Thumb Image Width</label>
-                            <input type="number" id="thumb_height" name="thumb_width"
-                                   class="form-control" min="1" required
-                                   value="<?php echo $imageDimension['thumb_width']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="medium_height">Medium Image Height</label>
-                            <input type="number" id="medium_height" name="medium_height"
-                                   class="form-control" min="1" required
-                                   value="<?php echo $imageDimension['medium_height']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="medium_width">Medium Image Width</label>
-                            <input type="number" id="medium_height" name="medium_width"
-                                   class="form-control" min="1" required
-                                   value="<?php echo $imageDimension['medium_width']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="large_height">Large Image Height</label>
-                            <input type="number" id="large_height" name="large_height"
-                                   class="form-control" min="1" required
-                                   value="<?php echo $imageDimension['large_height']; ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="large_width">Large Image Width</label>
-                            <input type="number" id="large_width" name="large_width"
-                                   class="form-control" min="1" required
-                                   value="<?php echo $imageDimension['large_width']; ?>">
-                        </div>
-                    </div>
-                </div>
+
+
             </div>
-            <!-- /.card -->
-        </div>
 
-        <div class="pb-5">
-            <button type="submit" class="btn btn-success">Update</button>
-        </div>
-    </form>
-</section>
-<!-- /.content -->
-<?= $this->endSection() ?>
+            <div class="pb-5">
+                <a href="{% url 'adminHome' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">{% if postData.id.value %}Update{% else %}Save{% endif %}
+                </button>
 
-<?= $this->section('script') ?>
-<script src="<?php echo base_url('js/main.js'); ?>"></script>
-<?= $this->endSection() ?>
+            </div>
+        </form>
+    </section>
+    <!-- /.content -->
+{% endblock %}
+{% block styles %}
+
+{% endblock %}
+{% block script %}
+    <script>
+
+        $(document).ready(function () {
+
+
+        });
+
+    </script>
+{% endblock %}

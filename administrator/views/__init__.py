@@ -5,3 +5,4 @@ from .users import Users
 from .group import GroupsView, GroupView
 from .users import User
 from .images import Images
+from .settings import SettingsView

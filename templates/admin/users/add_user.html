@@ -370,13 +370,15 @@
             </div>
 
             <div class="pb-5">
-                <a href="#" class="btn btn-danger pull-right deleteUser">Delete</a>
+                {% if user_permissions %}
+                    <a href="#" class="btn btn-danger pull-right deleteUser">Delete</a>
+                {% endif %}
                 <a href="{% url 'adminUsers' %}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-success">{% if postData.id.value %}Update{% else %}Save{% endif %}
                 </button>
             </div>
         </form>
-            <form id="deleteForm">
+        <form id="deleteForm">
             <input type="hidden" value="{{ postData.id.value }}" name="id">
             {% csrf_token %}
         </form>
@@ -390,11 +392,11 @@
 {% block script %}
 
 
-    {#    <script src="{% static 'js/addressPicker.js' %}"></script>#}
+        <script src="{% static 'js/addressPicker.js' %}"></script>
     <script src="{% static 'js/jquery.bootstrap-duallistbox.js' %}"></script>
-    {#    <script async defer#}
-    {#            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAftlPuppWtwjk-fBUQelgJmPtNFQ81_WA&libraries=places&callback=gMapInit"></script>#}
-    {#    #}
+        <script async defer
+                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAftlPuppWtwjk-fBUQelgJmPtNFQ81_WA&libraries=places&callback=gMapInit"></script>
+
     <script>
         $(document).ready(function () {
             $('#id_groups').bootstrapDualListbox({
@@ -444,7 +446,9 @@
                 var r = confirm("Are you sure you want to delete this user!");
                 if (r == true) {
                     let data = ($('#deleteForm').serializeArray());
-                    console.log(data)
+                    if({{ postData.id.value }} == 0){
+                        return
+                    }
                     $.ajax({
                         url: '{% url 'adminDeleteUser' %}',
                         data: data,

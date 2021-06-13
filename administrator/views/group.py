@@ -16,6 +16,9 @@ from django.contrib.auth.models import Group
 
 
 class GroupsView(BaseAdminView):
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs, session_menu='Group', session_submenu='',
+                                permission_required=[])
 
     def get(self, request):
         keyword = request.GET.get('keyword')
@@ -33,6 +36,10 @@ class GroupsView(BaseAdminView):
 
 
 class GroupView(BaseAdminView):
+    def dispatch(self, request, *args, **kwargs):
+        request.session['menu'] = 'Group'
+        return super().dispatch(request, *args, **kwargs, session_menu='User', session_submenu='',
+                                permission_required=[])
 
     @classmethod
     def add_group(cls, request):
@@ -59,6 +66,7 @@ class GroupView(BaseAdminView):
             return HttpResponse(json.dumps({'success': False}), content_type="application/json")
 
     def get(self, request, pk):
+
         if not pk:
             return redirect('adminAddGroup')
         user_service = UserService()

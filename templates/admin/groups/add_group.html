@@ -103,8 +103,9 @@
             </div>
 
             <div class="pb-5">
-
-                <a href="#" class="btn btn-danger pull-right deleteGroup">Delete</a>
+                {% if permissions %}
+                    <a href="#" class="btn btn-danger pull-right deleteGroup">Delete</a>
+                {% endif %}
                 <a href="{% url 'adminGroups' %}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-success">{% if postData.id.value %}Update{% else %}Save{% endif %}
                 </button>
@@ -148,6 +149,11 @@
                 var r = confirm("Are you sure you want to delete this group!");
                 if (r == true) {
                     let data = ($('#deleteForm').serializeArray());
+                    if ({{ postData.id.value }} == 0
+                )
+                    {
+                        return
+                    }
                     console.log(data)
                     $.ajax({
                         url: '{% url 'adminDeleteGroup' %}',
@@ -155,7 +161,7 @@
                         type: 'POST',
                         dataType: 'json',
                         success: function (data) {
-                        window.location.replace("{% url 'adminGroups' %}")
+                            window.location.replace("{% url 'adminGroups' %}")
                         },
                         error: function (err) {
                             location.reload();
