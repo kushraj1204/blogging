@@ -38,8 +38,6 @@
                     </a>
                 </li>
 
-                <!-- Users -->
-                {#                <?php if (checkPermission($user, $user_group_permission, 'view-user') && ($user['type'] == 1 || $user['manage_users'] == 1)) { ?>#}
                 <li class="nav-item">
                     <a href="{% url 'adminUsers' %}"
                        class="nav-link ">
@@ -49,9 +47,9 @@
                         </p>
                     </a>
                 </li>
-                {#                <?php } ?>#}
+
                 <li class="nav-item">
-                    <a href="#"
+                    <a href="{% url 'adminGroups' %}"
                        class="nav-link ">
                         <i class="nav-icon fas fa-users"></i>
                         <p>
@@ -59,15 +57,7 @@
                         </p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#"
-                       class="nav-link ">
-                        <i class="nav-icon fas fa-universal-access"></i>
-                        <p>
-                            Permissions
-                        </p>
-                    </a>
-                </li>
+
 
 
             </ul>

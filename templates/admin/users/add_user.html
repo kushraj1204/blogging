@@ -124,8 +124,7 @@
                                 <label for="address">Address</label>
                                 <input class="form-control {% if postData.address.error %}is-invalid{% endif %} {% if postData.address.error %}is-invalid{% endif %}"
                                        name="address" type="address"
-                                       value="
-                                               {% if postData.address.value != None %}{{ postData.address.value }}{% endif %}"
+                                       value="{% if postData.address.value != None %}{{ postData.address.value }}{% endif %}"
                                        id="address">
 
                                 {% if postData.address.error %}
@@ -174,7 +173,7 @@
                                        value="{{ postData.profile_image.value }}">
                                 <input id="profile_image_path" type="hidden"
                                        value="{{ postData.profile_image.value }}" readonly>
-                                {% if postData.profile_image %}
+                                {% if postData.profile_image.value %}
                                     <div class="p-1 savedprofileimage">
                                         <img id="preview" src="{{ MEDIA_URL }}{{ postData.profile_image.value }}"
                                              class=""
@@ -208,7 +207,7 @@
                                 <label for="email">Email</label>
                                 <input type="email" id="email" name="email"
                                        class="form-control {% if postData.email.error %}is-invalid{% endif %}"
-                                        {% if postData.id.value %} readonly{% endif %}
+                                        {% if postData.id.value and not postData.email.error %} readonly{% endif %}
                                        value="{{ postData.email.value }}">
                                 {% if postData.email.error %}
                                     <div class="invalid-feedback">
@@ -320,56 +319,79 @@
 
 
                 </div>
-                <div class="col-md-12">
-                    <div class="card card-secondary">
-                        <div class="card-header">
-                            <h3 class="card-title">User Groups</h3>
-                            <div class="card-tools">
-                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
-                                        data-toggle="tooltip" title="Collapse">
-                                    <i class="fas fa-minus"></i></button>
+                {% if user_groups %}
+                    <div class="col-md-12">
+                        <div class="card card-secondary">
+                            <div class="card-header">
+                                <h3 class="card-title">User Groups</h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                            data-toggle="tooltip" title="Collapse">
+                                        <i class="fas fa-minus"></i></button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {{ user_groups }}
                             </div>
                         </div>
-                        <div class="card-body">
-                            {{ user_groups }}
-                        </div>
                     </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="card card-secondary">
-                        <div class="card-header">
-                            <h3 class="card-title">User Permissions</h3>
-                            <div class="card-tools">
-                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
-                                        data-toggle="tooltip" title="Collapse">
-                                    <i class="fas fa-minus"></i></button>
+                    {% if postData.user_groups.error %}
+                        <div class="invalid-feedback">
+                            {{ postData.user_groups.error }}
+                        </div>
+                    {% endif %}
+                {% endif %}
+                {% if user_permissions %}
+                    <div class="col-md-12">
+                        <div class="card card-secondary">
+                            <div class="card-header">
+                                <h3 class="card-title">User Permissions</h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                            data-toggle="tooltip" title="Collapse">
+                                        <i class="fas fa-minus"></i></button>
+                                </div>
                             </div>
+                            <div class="card-body">
+                                {{ user_permissions }}
+                                <i> Note that user permissions will always override group permissions</i>
+                            </div>
+
                         </div>
-                        <div class="card-body">
-                            {{ user_permissions }}
-                        </div>
+
                     </div>
-                </div>
+                    {% if postData.user_permissions.error %}
+                        <div class="invalid-feedback">
+                            {{ postData.user_permissions.error }}
+                        </div>
+                    {% endif %}
+
+                {% endif %}
             </div>
 
             <div class="pb-5">
+                <a href="#" class="btn btn-danger pull-right deleteUser">Delete</a>
                 <a href="{% url 'adminUsers' %}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-success">{% if postData.id.value %}Update{% else %}Save{% endif %}
                 </button>
             </div>
         </form>
+            <form id="deleteForm">
+            <input type="hidden" value="{{ postData.id.value }}" name="id">
+            {% csrf_token %}
+        </form>
     </section>
     <!-- /.content -->
 {% endblock %}
 {% block styles %}
-    <link rel="stylesheet" type="text/css" href="{% static 'js/bootstrap-duallistbox/bootstrap-duallistbox.css' %}">
-
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap-duallistbox.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/duallist-plus.css' %}">
 {% endblock %}
 {% block script %}
 
 
     {#    <script src="{% static 'js/addressPicker.js' %}"></script>#}
-    <script src="{% static 'js/bootstrap-duallistbox-master/bootstrap-duallistbox-master/dist/jquery.bootstrap-duallistbox.js' %}"></script>
+    <script src="{% static 'js/jquery.bootstrap-duallistbox.js' %}"></script>
     {#    <script async defer#}
     {#            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAftlPuppWtwjk-fBUQelgJmPtNFQ81_WA&libraries=places&callback=gMapInit"></script>#}
     {#    #}
@@ -381,7 +403,8 @@
                 preserveSelectionOnMove: 'moved',
                 moveOnSelect: false,
                 moveAllLabel: 'Move all',
-                removeAllLabel: 'Remove all'
+                removeAllLabel: 'Remove all',
+                selectorMinimalHeight: 250
 
             });
             $('#id_user_permissions').bootstrapDualListbox({
@@ -390,13 +413,18 @@
                 preserveSelectionOnMove: 'moved',
                 moveOnSelect: false,
                 moveAllLabel: 'Move all',
-                removeAllLabel: 'Remove all'
+                removeAllLabel: 'Remove all',
+                selectorMinimalHeight: 250
             });
             removeInvalidClass();
             checkBoxControls();
             profileImageUpload();
             usernameAuto();
-            onformSubmit();
+            deleteUser();
+            removeUploadedPhoto();
+        });
+
+        function removeUploadedPhoto() {
             $('#removeUploadedPhoto').click(function () {
                 var r = confirm("Are you sure?? The uploaded  image will be discarded.");
                 if (r == true) {
@@ -408,18 +436,30 @@
 
                 }
             })
-        });
+        }
 
-        function onformSubmit() {
-            $("form").submit(function () {
-                {#$(this).children('#is_superuser_chkbox').prop('disabled', true);#}
-                {#$(this).children('#is_staff_chkbox').prop('disabled', true);#}
-                {#$(this).children('#is_active_chkbox').prop('disabled', true);#}
-                {#$(this).children('#phone_activated_chkbox').prop('disabled', true);#}
-                {#$(this).children('#sendEmail_chkbox').prop('disabled', true);#}
-                {#$(this).children('#sendSMS_chkbox').prop('disabled', true);#}
-                {#$(this).children('#image').prop('disabled', true);#}
-            });
+        function deleteUser() {
+            $('.deleteUser').on('click', function (e) {
+                e.preventDefault();
+                var r = confirm("Are you sure you want to delete this user!");
+                if (r == true) {
+                    let data = ($('#deleteForm').serializeArray());
+                    console.log(data)
+                    $.ajax({
+                        url: '{% url 'adminDeleteUser' %}',
+                        data: data,
+                        type: 'POST',
+                        dataType: 'json',
+                        success: function (data) {
+                            window.location.replace("{% url 'adminUsers' %}")
+                        },
+                        error: function (err) {
+                            location.reload();
+                        },
+
+                    });
+                }
+            })
         }
 
         function usernameAuto() {

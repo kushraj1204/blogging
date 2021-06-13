@@ -1,3 +1,6 @@
+import ast
+
+from django.http import HttpResponse
 from django.shortcuts import redirect, render, get_object_or_404
 
 from Users.models import CustomUser
@@ -42,6 +45,19 @@ class GroupView(BaseAdminView):
         return render(request, 'admin/groups/add_group.html',
                       {'postData': post_data, 'group_permissions': None})
 
+    @classmethod
+    def delete_group(cls, request):
+        _post_data = request.POST
+        pk = _post_data.get('id')
+        group = Group.objects.get(pk=pk)
+        status = group.delete()
+        if status:
+            messages.success(request, 'Group Deleted Successfully')
+            return HttpResponse(json.dumps({'success': True}), content_type="application/json")
+        else:
+            messages.error(request, 'There was a problem in deleting the group')
+            return HttpResponse(json.dumps({'success': False}), content_type="application/json")
+
     def get(self, request, pk):
         if not pk:
             return redirect('adminAddGroup')
@@ -58,8 +74,12 @@ class GroupView(BaseAdminView):
     def post(self, request, pk):
         _post_data = request.POST
         permissions_input = _post_data.getlist('permissions')
+        _permissions = []
+        for x in permissions_input:
+            _permissions.append(x)
 
         post_data = _post_data.dict()
+        post_data['permissions'] = _permissions
         post_data.pop('csrfmiddlewaretoken')
         user_service = UserService()
         if pk:
@@ -68,7 +88,7 @@ class GroupView(BaseAdminView):
         else:
             group = Group()
             post_form = GroupForm(post_data, instance=group)
-        permissions = post_form['user_permissions']
+        permissions = post_form['permissions']
         if post_form.is_valid():
             status = post_form.save()
 
@@ -77,14 +97,15 @@ class GroupView(BaseAdminView):
                 return redirect('adminGroupDetail', pk=pk if pk > 0 else group.pk)
             else:
                 messages.error(request, 'Error occurred while saving group')
-                post_data['id'] = 0
+                post_data['id'] = pk
                 post_data = user_service.getPostData(post_data, None)
                 return render(request, 'admin/groups/add_group.html',
-                              {'postData': post_data, 'permissions': permissions})
+                              {'postData': post_data, 'permissions': permissions if pk > 0 else None})
 
         else:
             messages.error(request, 'Form validation Error. Please correct the below mentioned errors')
+            print(post_form.errors)
             errors = json.loads(post_form.errors.as_json())  # errors to json and then to dict
             post_data = user_service.getPostData(post_data, errors)
             return render(request, 'admin/groups/add_group.html',
-                          {'postData': post_data, 'permissions': permissions})
+                          {'postData': post_data, 'permissions': permissions if pk > 0 else None})

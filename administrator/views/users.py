@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 from Users.models import CustomUser
@@ -39,6 +40,19 @@ class User(BaseAdminView):
         return render(request, 'admin/users/add_user.html',
                       {'postData': post_data, 'user_groups': None, 'user_permissions': None})
 
+    @classmethod
+    def delete_user(cls, request):
+        _post_data = request.POST
+        pk = _post_data.get('id')
+        user = CustomUser.objects.get(pk=pk)
+        status = user.delete()
+        if status:
+            messages.success(request, 'Group Deleted Successfully')
+            return HttpResponse(json.dumps({'success': True}), content_type="application/json")
+        else:
+            messages.error(request, 'There was a problem in deleting the group')
+            return HttpResponse(json.dumps({'success': False}), content_type="application/json")
+
     def get(self, request, pk):
         if not pk:
             return redirect('adminAddUser')
@@ -47,8 +61,6 @@ class User(BaseAdminView):
         user_form = UserUpdateForm(instance=user)
         user_groups = user_form['groups']
         user_permissions = user_form['user_permissions']
-        # permission=user_form['user_permissions']
-        # print(permission)
 
         post_data = user_service.getPostData(vars(user), None)
 
@@ -56,48 +68,24 @@ class User(BaseAdminView):
                       {'postData': post_data, 'user_groups': user_groups, 'user_permissions': user_permissions})
 
     def post(self, request, pk):
+        user_service = UserService()
         _post_data = request.POST
-        user_groups_input = _post_data.getlist('groups')
         user_permissions_input = _post_data.getlist('user_permissions')
+        user_groups_input = _post_data.getlist('groups')
+        _user_permissions = []
+        _user_groups = []
+        for x in user_groups_input:
+            _user_groups.append(x)
+        for x in user_permissions_input:
+            _user_permissions.append(x)
 
         post_data = _post_data.dict()
-        # if "groups" in post_data:
-        #     post_data.pop('groups')
-        # if "user_permissions" in post_data:
-        #     post_data.pop('user_permissions')
-        post_data.pop('csrfmiddlewaretoken')
-        user_service = UserService()
-        post_data['lat'] = round(float(post_data['lat']), 8)
-        post_data['lng'] = round(float(post_data['lng']), 8)
-        post_data['is_superuser'] = True if (post_data['is_superuser'] == 'True') else False
-        post_data['is_staff'] = True if (post_data['is_staff'] == 'True') else False
-        post_data['is_active'] = True if (post_data['is_active'] == 'True') else False
-        post_data['phone_activated'] = True if (post_data['phone_activated'] == 'True') else False
-        post_data['sendEmail'] = True if (post_data['sendEmail'] == 'True') else False
-        post_data['sendSMS'] = True if (post_data['sendSMS'] == 'True') else False
-
-        try:
-            if "image" in post_data:
-                post_data.pop('image')
-            # if "groups" in post_data:
-            #     post_data.pop('groups')
-            # if "user_permissions" in post_data:
-            #     post_data.pop('user_permissions')
-            if "is_superuser_chkbox" in post_data:
-                post_data.pop('is_superuser_chkbox')
-            if "is_staff_chkbox" in post_data:
-                post_data.pop('is_staff_chkbox')
-            if "is_active_chkbox" in post_data:
-                post_data.pop('is_active_chkbox')
-            if "phone_activated_chkbox" in post_data:
-                post_data.pop('phone_activated_chkbox')
-            if "sendEmail_chkbox" in post_data:
-                post_data.pop('sendEmail_chkbox')
-            if "sendSMS_chkbox" in post_data:
-                post_data.pop('sendSMS_chkbox')
-        except Exception as e:
-            print('field pop error')
-            print(e)
+        post_data = self.get_filtered_input(post_data)
+        print('filtered input')
+        print(_user_permissions)
+        print(_user_groups)
+        post_data['groups'] = _user_groups
+        post_data['user_permissions'] = _user_permissions
 
         if not post_data['phone']:
             post_data.pop('phone')
@@ -107,15 +95,12 @@ class User(BaseAdminView):
                 post_data.pop('password')
             user = user_service.getById(pk)
             post_form = UserUpdateForm(post_data, instance=user)
-            # print(post_form)
         else:
             user = CustomUser()
             post_form = UserForm(post_data, instance=user)
 
         user_groups = post_form['groups']
         user_permissions = post_form['user_permissions']
-        print(user_groups)
-        print(user_permissions)
         if post_form.is_valid():
             status = user_service.saveUser(post_data, pk)
             if status['success']:
@@ -123,7 +108,7 @@ class User(BaseAdminView):
                 return redirect('adminUserDetail', pk=status['id'])
             else:
                 messages.error(request, 'Error occurred while saving user')
-                post_data['id'] = 0
+                post_data['id'] = pk
                 post_data = user_service.getPostData(post_data, None)
                 return render(request, 'admin/users/add_user.html',
                               {'postData': post_data, 'user_groups': user_groups, 'user_permissions': user_permissions})
@@ -136,3 +121,26 @@ class User(BaseAdminView):
             post_data = user_service.getPostData(post_data, errors)
             return render(request, 'admin/users/add_user.html',
                           {'postData': post_data, 'user_groups': user_groups, 'user_permissions': user_permissions})
+
+    def get_filtered_input(self, post_data):
+        return_data = dict()
+        return_data['id'] = post_data['id']
+        return_data['first_name'] = post_data['first_name']
+        return_data['last_name'] = post_data['last_name']
+        return_data['gender'] = post_data['gender']
+        return_data['phone'] = post_data['phone']
+        return_data['dob'] = post_data['dob']
+        return_data['address'] = post_data['address']
+        return_data['lat'] = round(float(post_data['lat']), 8)
+        return_data['lng'] = round(float(post_data['lng']), 8)
+        return_data['profile_image'] = post_data['profile_image']
+        return_data['email'] = post_data['email']
+        return_data['username'] = post_data['username']
+        return_data['password'] = post_data['password']
+        return_data['is_superuser'] = True if (post_data['is_superuser'] == 'True') else False
+        return_data['is_staff'] = True if (post_data['is_staff'] == 'True') else False
+        return_data['is_active'] = True if (post_data['is_active'] == 'True') else False
+        return_data['phone_activated'] = True if (post_data['phone_activated'] == 'True') else False
+        return_data['sendEmail'] = True if (post_data['sendEmail'] == 'True') else False
+        return_data['sendSMS'] = True if (post_data['sendSMS'] == 'True') else False
+        return return_data

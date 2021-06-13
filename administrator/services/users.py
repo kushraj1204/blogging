@@ -23,29 +23,35 @@ class UserService():
         user.dob = date.isoformat(user.dob)
         return user
 
-
     def saveUser(self, user_data, pk):
         try:
             if "dob" in user_data:
-                date_format = '%Y-%m-%d'
-                unaware_dob = datetime.datetime.strptime(user_data['dob'], date_format)
-                aware_dob = pytz.utc.localize(unaware_dob)
-                user_data['dob'] = aware_dob
+                if not user_data['dob']:
+                    user_data['dob'] = timezone.now()
+                else:
+                    date_format = '%Y-%m-%d'
+                    unaware_dob = datetime.datetime.strptime(user_data['dob'], date_format)
+                    aware_dob = pytz.utc.localize(unaware_dob)
+                    user_data['dob'] = aware_dob
         except Exception as e:
-            print(e)
-            print('datetimeerror')
+            user_data['dob'] = timezone.now()
             pass
         if pk:
-            try:
-                if "password" in user_data:
-                    user_data['password'] = make_password(user_data['password'])
-            except Exception as e:
-                print(e)
-                pass
+            groups = user_data['groups']
+            user_permissions = user_data['user_permissions']
+            user_data.pop('user_permissions')
+            user_data.pop('groups')
+            if "password" in user_data:
+                user_data['password'] = make_password(user_data['password'])
             try:
                 update_data = user_data
                 status = CustomUser.objects.filter(pk=pk).update(**update_data)
                 if status:
+                    saved_user = CustomUser.objects.get(pk=pk)
+                    saved_user.groups.clear()
+                    saved_user.user_permissions.clear()
+                    saved_user.groups.add(*groups)
+                    saved_user.user_permissions.add(*user_permissions)
                     return {'id': pk, 'success': True}
             except Exception as e:
                 print(e)

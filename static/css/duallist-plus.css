@@ -1,0 +1,39 @@
+.moveall,
+.removeall {
+    border: 1px solid #ccc !important;
+
+&
+:hover {
+    background: #efefef;
+}
+
+}
+
+.moveall::after {
+    content: attr(title);
+}
+
+.move::after {
+    content: attr(title);
+}
+
+.removeall::after {
+    content: attr(title);
+}
+
+.remove::after {
+    content: attr(title);
+}
+
+.form-control option {
+    padding: 10px;
+    border-bottom: 1px solid #efefef;
+}
+
+.bootstrap-duallistbox-selected-list_permissions {
+    height: 500px;
+}
+
+.bootstrap-duallistbox-nonselected-list_permissions {
+    height: 500px;
+}
