@@ -1,10 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-
 from Users.models import CustomUser
 from administrator.forms import UserForm, UserUpdateForm
-from administrator.services.auth import AuthService
-
 from django.core.paginator import Paginator
 from administrator.services.users import UserService
 from administrator.views.base import BaseAdminView
@@ -12,12 +9,13 @@ from django.contrib import messages
 import json
 
 
-class Users(BaseAdminView):
+class UserView(BaseAdminView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs, session_menu='User', session_submenu='',
                                 permission_required=[])
 
-    def get(self, request):
+    @classmethod
+    def get_list(cls, request):
         keyword = request.GET.get('keyword')
         filter = {'keyword': keyword if keyword is not None else ""}
         if keyword is None:
@@ -31,37 +29,67 @@ class Users(BaseAdminView):
                       {'paginator': paginator, 'page_number': page_number, 'page_obj': page_obj,
                        'filter': filter})
 
-
-class User(BaseAdminView):
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs, session_menu='User', session_submenu='',
-                                permission_required=[])
-
     @classmethod
-    def add_user(cls, request):
-        user = CustomUser()
-        user.id = 0
-        user_service = UserService()
-        post_data = user_service.getPostData(vars(user), None)
-        return render(request, 'admin/users/add_user.html',
-                      {'postData': post_data, 'user_groups': None, 'user_permissions': None})
+    def add(cls, request):
+        if request.method == 'POST':
+            user_service = UserService()
+            _post_data = request.POST
+            post_data = _post_data.dict()
+            post_data = cls.get_filtered_input(post_data)
+            if not post_data['phone']:
+                post_data.pop('phone')
 
-    @classmethod
-    def delete_user(cls, request):
-        _post_data = request.POST
-        pk = _post_data.get('id')
-        user = CustomUser.objects.get(pk=pk)
-        status = user.delete()
-        if status:
-            messages.success(request, 'Group Deleted Successfully')
-            return HttpResponse(json.dumps({'success': True}), content_type="application/json")
+            user = CustomUser()
+            post_form = UserForm(post_data, instance=user)
+
+            if post_form.is_valid():
+                status = user_service.saveUser(post_data, 0)
+                if status['success']:
+                    messages.success(request, 'Success')
+                    return redirect('adminUserDetail', pk=status['id'])
+                else:
+                    messages.error(request, 'Error occurred while saving user')
+                    post_data['id'] = 0
+                    post_data = user_service.getPostData(post_data, None)
+                    return render(request, 'admin/users/add_user.html',
+                                  {'postData': post_data, 'user_groups': None,
+                                   'user_permissions': None})
+
+            else:
+                messages.error(request, 'Form validation Error. Please correct the below mentioned errors')
+                errors = json.loads(post_form.errors.as_json())  # errors to json and then to dict
+                print(post_form.errors)
+                print(errors)
+                post_data = user_service.getPostData(post_data, errors)
+                return render(request, 'admin/users/add_user.html',
+                              {'postData': post_data, 'user_groups': None,
+                               'user_permissions': None})
         else:
-            messages.error(request, 'There was a problem in deleting the group')
-            return HttpResponse(json.dumps({'success': False}), content_type="application/json")
+            user = CustomUser()
+            user.id = 0
+            user_service = UserService()
+            post_data = user_service.getPostData(vars(user), None)
+            return render(request, 'admin/users/add_user.html',
+                          {'postData': post_data, 'user_groups': None, 'user_permissions': None})
+
+    @classmethod
+    def delete(cls, request, pk):
+        if request.method == 'POST':
+            _post_data = request.POST
+            user = CustomUser.objects.get(pk=pk)
+            status = user.delete()
+            if status:
+                messages.success(request, 'User Deleted Successfully')
+                return HttpResponse(json.dumps({'success': True}), content_type="application/json")
+            else:
+                messages.error(request, 'There was a problem in deleting the user')
+                return HttpResponse(json.dumps({'success': False}), content_type="application/json")
+        else:
+            return redirect('adminUserDetail', pk=pk)
 
     def get(self, request, pk):
         if not pk:
-            return redirect('adminAddUser')
+            return redirect('adminUserAdd')
         user_service = UserService()
         user = user_service.getById(pk)
         user_form = UserUpdateForm(instance=user)
@@ -96,14 +124,10 @@ class User(BaseAdminView):
         if not post_data['phone']:
             post_data.pop('phone')
 
-        if pk:
-            if not post_data['password']:
-                post_data.pop('password')
-            user = user_service.getById(pk)
-            post_form = UserUpdateForm(post_data, instance=user)
-        else:
-            user = CustomUser()
-            post_form = UserForm(post_data, instance=user)
+        if not post_data['password']:
+            post_data.pop('password')
+        user = user_service.getById(pk)
+        post_form = UserUpdateForm(post_data, instance=user)
 
         user_groups = post_form['groups']
         user_permissions = post_form['user_permissions']
@@ -111,7 +135,7 @@ class User(BaseAdminView):
             status = user_service.saveUser(post_data, pk)
             if status['success']:
                 messages.success(request, 'Success')
-                return redirect('adminUserDetail', pk=status['id'])
+                return redirect('adminUserDetail', pk=pk)
             else:
                 messages.error(request, 'Error occurred while saving user')
                 post_data['id'] = pk
@@ -126,10 +150,11 @@ class User(BaseAdminView):
             print(errors)
             post_data = user_service.getPostData(post_data, errors)
             return render(request, 'admin/users/add_user.html',
-                          {'postData': post_data, 'user_groups': user_groups if pk > 0 else None,
-                           'user_permissions': user_permissions if pk > 0 else None})
+                          {'postData': post_data, 'user_groups': user_groups,
+                           'user_permissions': user_permissions})
 
-    def get_filtered_input(self, post_data):
+    @staticmethod
+    def get_filtered_input(post_data):
         return_data = dict()
         return_data['id'] = post_data['id']
         return_data['first_name'] = post_data['first_name']

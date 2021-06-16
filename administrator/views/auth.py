@@ -10,6 +10,7 @@ import json
 class Login(View):
 
     def dispatch(self, request, *args, **kwargs):
+        request.session.flush()
         if request.session.get('loggedInUser') is not None:
             return redirect('adminHome')
         return super().dispatch(request, *args, **kwargs)

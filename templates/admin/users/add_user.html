@@ -31,7 +31,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="row float-sm-right">
-                        <a href="{% url 'adminUsers' %}" class="btn btn-default"><i
+                        <a href="{% url 'adminUserList' %}" class="btn btn-default"><i
                                 class="fa fa-angle-left"></i> Back</a>
                     </div>
                 </div>
@@ -47,7 +47,7 @@
             {#             echo ($validation->listErrors()) ?: ''; ?>#}
         </div>
 
-        <form action="{% url 'adminUserDetail' pk=postData.id.value %}" method="post" accept-charset="utf-8"
+        <form method="post" accept-charset="utf-8"
               enctype="multipart/form-data">
             <div class="row">
                 {% csrf_token %}
@@ -373,7 +373,7 @@
                 {% if user_permissions %}
                     <a href="#" class="btn btn-danger pull-right deleteUser">Delete</a>
                 {% endif %}
-                <a href="{% url 'adminUsers' %}" class="btn btn-secondary">Cancel</a>
+                <a href="{% url 'adminUserList' %}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-success">{% if postData.id.value %}Update{% else %}Save{% endif %}
                 </button>
             </div>
@@ -450,12 +450,12 @@
                         return
                     }
                     $.ajax({
-                        url: '{% url 'adminDeleteUser' %}',
+                        url: '{% url 'adminUserDelete' pk=postData.id.value %}',
                         data: data,
                         type: 'POST',
                         dataType: 'json',
                         success: function (data) {
-                            window.location.replace("{% url 'adminUsers' %}")
+                            window.location.replace("{% url 'adminUserList' %}")
                         },
                         error: function (err) {
                             location.reload();

@@ -5,14 +5,23 @@ urlpatterns = [
     path('', views.Dashboard.as_view(), name='adminHome'),
     path('login', views.Login.as_view(), name='adminLogin'),
     path('logout', views.Logout.as_view(), name='adminLogout'),
-    path('users', views.Users.as_view(), name='adminUsers'),
-    path('user/<int:pk>', views.User.as_view(), name='adminUserDetail'),
-    path('user/add_new', views.User.add_user, name='adminAddUser'),
-    path('user/delete', views.User.delete_user, name='adminDeleteUser'),
-    path('groups', views.GroupsView.as_view(), name='adminGroups'),
-    path('group/<int:pk>', views.GroupView.as_view(), name='adminGroupDetail'),
-    path('group/add_new', views.GroupView.add_group, name='adminAddGroup'),
-    path('group/delete', views.GroupView.delete_group, name='adminDeleteGroup'),
+
+    path('users', views.UserView.get_list, name='adminUserList'),
+    path('users/add', views.UserView.add, name='adminUserAdd'),
+    path('user/<int:pk>/edit', views.UserView.as_view(), name='adminUserDetail'),
+    path('user/<int:pk>/delete', views.UserView.delete, name='adminUserDelete'),
+
+    path('groups', views.GroupView.get_list, name='adminGroupList'),
+    path('groups/add', views.GroupView.add, name='adminGroupAdd'),
+    path('group/<int:pk>/edit', views.GroupView.as_view(), name='adminGroupDetail'),
+    path('group/<int:pk>/delete', views.GroupView.delete, name='adminGroupDelete'),
+
+    path('contents', views.ContentView.get_list, name='adminContentList'),
+    path('contents/add', views.ContentView.add, name='adminContentAdd'),
+    path('content/<int:pk>/edit', views.ContentView.as_view(), name='adminContentDetail'),
+    path('content/<int:pk>/delete', views.ContentView.delete, name='adminContentDelete'),
+
     path('user/imageupload', views.Images.as_view(), name='userImageUpload'),
     path('settings', views.SettingsView.as_view(), name='adminSettings'),
+
 ]

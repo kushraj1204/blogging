@@ -40,7 +40,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="{% url 'adminUsers' %}"
+                    <a href="{% url 'adminUserList' %}"
                        class="nav-link {% if request.session.menu == 'User' %}active{% endif %}">
                         <i class="nav-icon fas fa-user"></i>
                         <p>
@@ -50,11 +50,20 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="{% url 'adminGroups' %}"
+                    <a href="{% url 'adminGroupList' %}"
                        class="nav-link {% if request.session.menu == 'Group' %}active{% endif %}">
                         <i class="nav-icon fas fa-users"></i>
                         <p>
                             Groups
+                        </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'adminContentList' %}"
+                       class="nav-link {% if request.session.menu == 'Content' %}active{% endif %}">
+                        <i class="nav-icon fas fa-gear"></i>
+                        <p>
+                            Content
                         </p>
                     </a>
                 </li>

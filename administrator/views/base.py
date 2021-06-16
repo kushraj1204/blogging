@@ -32,15 +32,18 @@ class BaseAdminView(View):
             id = request.session.get('loggedInUser')['id']
             user = CustomUser.objects.get(pk=id)
             permissions_access = user.get_all_permissions()
-            if not permission_required.issubset(permissions_access):
-                print('should redirect to unauthorized page ahile lai thikai chha')
-                pass
+            if not user.is_superuser:
+                if not permission_required.issubset(permissions_access):
+                    print('should redirect to unauthorized page ahile lai thikai chha')
+                    pass
             user = vars(user)
             auth_service = AuthService()
             return_data = auth_service.affirm_user_access(user)
-            request.session['loggedInUser'] = return_data['data']
-            request.session['permissions'] = list(permissions_access)
             if not return_data['data']:
+                request.session.flush
                 messages.error(request, return_data['message'])
-                return redirect('home')
+                return redirect('adminLogin')
+            else:
+                request.session['loggedInUser'] = return_data['data']
+                request.session['permissions'] = list(permissions_access)
         return super().dispatch(request, *args, **kwargs)

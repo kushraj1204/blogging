@@ -5,10 +5,11 @@ class BaseService:
 
     def affirm_user_access(self, exists):
         session_data = {}
-        if not exists['is_staff']:
-            return {'data': False, 'message': 'Staff status has not been activated yet'}
-        if not exists['is_active']:
-            return {'data': False, 'message': 'User account is not activated yet'}
+        if not exists['is_superuser']: #superuser doesnt need any special permissions to do anything
+            if not exists['is_staff']:
+                return {'data': False, 'message': 'Staff status has not been activated yet'}
+            if not exists['is_active']:
+                return {'data': False, 'message': 'User account is not activated yet'}
         session_data['full_name'] = exists['first_name'] + ' ' + exists['last_name']
         session_data['id'] = exists['id']
         session_data['profile_image'] = exists['profile_image']
@@ -31,7 +32,4 @@ class BaseService:
             return_data[datakey] = field_dict
         return return_data
 
-    def is_permission_allowed(self, user_id, permission_code=''):
-        user = CustomUser.objects.get(pk=user_id)
-        print(user.get_all_permissions())
-        return user
+

@@ -23,7 +23,7 @@
         <div class="row mb-3">
             <div class="col-md-6"></div>
             <div class="col-md-6">
-                <form id="filter" action="{% url 'adminUsers' %}" method="GET">
+                <form id="filter" action="{% url 'adminUserList' %}" method="GET">
                     <div class="input-group input-group-sm">
                         <input type="text" name="keyword" class="form-control"
                                value="{{ filter.keyword }}">
