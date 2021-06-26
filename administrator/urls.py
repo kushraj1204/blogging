@@ -21,7 +21,18 @@ urlpatterns = [
     path('content/<int:pk>/edit', views.ContentView.as_view(), name='adminContentDetail'),
     path('content/<int:pk>/delete', views.ContentView.delete, name='adminContentDelete'),
 
-    path('user/imageupload', views.Images.as_view(), name='userImageUpload'),
+    path('categories', views.CategoryView.get_list, name='adminCategoryList'),
+    path('categories/add', views.CategoryView.add, name='adminCategoryAdd'),
+    path('category/<int:pk>/edit', views.CategoryView.as_view(), name='adminCategoryDetail'),
+    path('category/<int:pk>/delete', views.CategoryView.delete, name='adminCategoryDelete'),
+
+    path('blogs', views.BlogView.get_list, name='adminBlogList'),
+    path('blogs/add', views.BlogView.add, name='adminBlogAdd'),
+    path('blog/<int:pk>/edit', views.BlogView.as_view(), name='adminBlogDetail'),
+    path('blog/<int:pk>/delete', views.BlogView.delete, name='adminBlogDelete'),
+
+    path('imageupload', views.Images.as_view(), name='imageUpload'),
+    path('commonmedia/imageList', views.Images.getImageList, name='imageList'),
     path('settings', views.SettingsView.as_view(), name='adminSettings'),
 
 ]

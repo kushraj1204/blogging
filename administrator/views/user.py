@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from Users.models import CustomUser
 from administrator.forms import UserForm, UserUpdateForm
 from django.core.paginator import Paginator
@@ -76,8 +76,11 @@ class UserView(BaseAdminView):
     def delete(cls, request, pk):
         if request.method == 'POST':
             _post_data = request.POST
-            user = CustomUser.objects.get(pk=pk)
-            status = user.delete()
+            try:
+                user = get_object_or_404(CustomUser, pk=pk)
+                status = user.delete()
+            except:
+                status = 0
             if status:
                 messages.success(request, 'User Deleted Successfully')
                 return HttpResponse(json.dumps({'success': True}), content_type="application/json")

@@ -6,3 +6,5 @@ from .user import UserView
 from .image import Images
 from .setting import SettingsView
 from .content import ContentView
+from .category import CategoryView
+from .blog import BlogView

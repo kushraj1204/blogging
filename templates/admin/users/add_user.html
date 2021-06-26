@@ -185,6 +185,7 @@
                                 {% endif %}
 
                             </div>
+
                         </div>
                         <!-- /.card-body -->
                     </div>
@@ -439,6 +440,45 @@
                 }
             })
         }
+      function profileImageUpload() {
+            $("#image").change(function () {
+                var fd = new FormData();
+                var files = $('#image')[0].files;
+
+                // Check file selected or not
+                if (files.length > 0) {
+                    $(".imageuploadspinner").show();
+                    fd.append('file', files[0]);
+                    fd.append('csrfmiddlewaretoken', '{{csrf_token}}');
+                    fd.append('imagetype', 'userimages');
+                    $.ajax({
+                        url: '{% url 'imageUpload' %}',
+                        type: 'post',
+                        data: fd,
+                        contentType: false,
+                        processData: false,
+                        success: function (response) {
+
+                            if (response.result) {
+                                $("#newprofileimagepreview").attr("src", {{ MEDIA_URL }}+response.data.saved_filename);
+                                $(".newprofileimage").show(); // Display image element
+                                $(".savedprofileimage").hide();
+                                $(".imageuploadspinner").hide();
+                                $(".preview img").show(); // Display image element
+                                $("#profile_image").val(response.data.saved_filename); // Display image element
+
+                            } else {
+                               $(".imageuploadspinner").hide();
+                                alert('There was in issue in uploading the image');
+                            }
+                        },
+                    });
+                } else {
+                    alert("Please select a file.");
+                }
+            });
+
+        }
 
         function deleteUser() {
             $('.deleteUser').on('click', function (e) {
@@ -474,43 +514,6 @@
             });
         }
 
-        function profileImageUpload() {
-            $("#image").change(function () {
-                var fd = new FormData();
-                var files = $('#image')[0].files;
-
-                // Check file selected or not
-                if (files.length > 0) {
-                    $(".imageuploadspinner").show();
-                    fd.append('file', files[0]);
-                    fd.append('csrfmiddlewaretoken', '{{csrf_token}}');
-                    $.ajax({
-                        url: '{% url 'userImageUpload' %}',
-                        type: 'post',
-                        data: fd,
-                        contentType: false,
-                        processData: false,
-                        success: function (response) {
-                            if (response != 0) {
-                                $("#newprofileimagepreview").attr("src", {{ MEDIA_URL }}+response.data.saved_filename);
-                                $(".newprofileimage").show(); // Display image element
-                                $(".savedprofileimage").hide();
-                                $(".imageuploadspinner").hide();
-                                $(".preview img").show(); // Display image element
-                                $("#profile_image").val(response.data.saved_filename); // Display image element
-
-                            } else {
-                                alert('file not uploaded');
-                                $(".imageuploadspinner").hide();
-                            }
-                        },
-                    });
-                } else {
-                    alert("Please select a file.");
-                }
-            });
-
-        }
 
         function removeInvalidClass() {
             $('input').on('focus', function () {

@@ -1,8 +1,6 @@
 import unicodedata
 
 from django.contrib.admin.widgets import AdminDateWidget
-from django_google_maps import widgets as map_widgets
-from django_google_maps import fields as map_fields
 from django import forms
 from django.contrib.auth import (
     authenticate, get_user_model, password_validation,
@@ -22,7 +20,6 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.text import capfirst
 from django.utils.translation import gettext, gettext_lazy as _
-from django_google_maps.widgets import GoogleMapsAddressWidget
 
 from Users.models import CustomUser
 

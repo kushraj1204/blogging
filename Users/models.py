@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.base_user import BaseUserManager
-from django_google_maps import fields as map_fields
 from django.utils import timezone
 
 
@@ -51,7 +50,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=False)
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
-    address = map_fields.AddressField(max_length=200, null=True)
+    address = models.TextField(max_length=200, null=True)
     lat = models.DecimalField(decimal_places=10, default=27.7172, max_digits=15)
     lng = models.DecimalField(decimal_places=10, default=85.3240, max_digits=15)
     dob = models.DateTimeField(null=True, blank=True, default=timezone.now)

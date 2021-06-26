@@ -3,9 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from django.utils.safestring import mark_safe
 
-from blogs.models import Category, Blog, BlogImages,  Content
-from django_google_maps import widgets as map_widgets
-from django_google_maps import fields as map_fields
+from blogs.models import Category, Blog,   Content
 from django.contrib import messages
 from django.utils.text import slugify
 import datetime
@@ -174,13 +172,9 @@ class BlogAdmin(admin.ModelAdmin):
 
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Blog, BlogAdmin)
-admin.site.register(BlogImages, BlogImagesAdmin)
 
 
-class SettingsAdmin(admin.ModelAdmin):
-    formfield_overrides = {
-        map_fields.AddressField: {'widget': map_widgets.GoogleMapsAddressWidget},
-    }
+
 
 
 

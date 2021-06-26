@@ -25,6 +25,7 @@ class Login(View):
         auth_service = AuthService()
         exists = auth_service.login(username, password)
         if exists['data']:
+
             request.session['loggedInUser'] = exists['data']
             messages.success(request, 'Login Success')
             return redirect('adminHome')

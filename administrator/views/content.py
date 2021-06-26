@@ -71,8 +71,11 @@ class ContentView(BaseAdminView):
     @classmethod
     def delete(cls, request, pk):
         _post_data = request.POST
-        content = Content.objects.get(pk=pk)
-        status = content.delete()
+        try:
+            content = get_object_or_404(Content, pk=pk)
+            status = content.delete()
+        except:
+            status = 0
         if status:
             messages.success(request, 'Content Deleted Successfully')
             return HttpResponse(json.dumps({'success': True}), content_type="application/json")

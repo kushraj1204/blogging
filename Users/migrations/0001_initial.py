@@ -3,7 +3,6 @@
 import Users.models
 from django.db import migrations, models
 import django.utils.timezone
-import django_google_maps.fields
 
 
 class Migration(migrations.Migration):
@@ -29,8 +28,8 @@ class Migration(migrations.Migration):
                 ('is_superuser', models.BooleanField(default=False)),
                 ('first_name', models.CharField(max_length=200)),
                 ('last_name', models.CharField(max_length=200)),
-                ('address', django_google_maps.fields.AddressField(max_length=200, null=True)),
-                ('geolocation', django_google_maps.fields.GeoLocationField(max_length=100, null=True)),
+                ('address', models.TextField(max_length=200, null=True)),
+                ('geolocation', models.TextField(max_length=100, null=True)),
                 ('dob', models.DateTimeField(blank=True, default=django.utils.timezone.now, null=True)),
                 ('phone', models.CharField(blank=True, max_length=200)),
                 ('phone_activated', models.BooleanField(default=False)),

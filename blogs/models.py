@@ -6,7 +6,7 @@ from Users.models import CustomUser
 
 
 class Category(models.Model):
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=False)
     left = models.IntegerField(default=0, blank=True)
     right = models.IntegerField(default=0, blank=True)
     level = models.IntegerField(default=0, blank=True)
@@ -35,16 +35,24 @@ class Category(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        parent = Category.objects.get(id=self.parent_id)
-        self.level = parent.level + 1
+
+        if self.parent is not None:
+            parent = Category.objects.get(id=self.parent_id)
+            self.level = parent.level + 1
         title_trimmed = self.title.strip()
         title = " ".join(title_trimmed.split())
         self.title = title
-        self.alias = self.generate_alias(self.title)
+        if not self.id:
+            self.alias = self.generate_alias(self.title)
         self.created_by_id = 1
         self.modified_by_id = 1
-        super(Category, self).save(*args, **kwargs)
-        self.category_rebuild()
+        try:
+            super(Category, self).save(*args, **kwargs)
+            self.category_rebuild()
+            return True
+        except Exception as e:
+            print(e)
+            return False
 
     def generate_alias(self, title):
         alias = slugify(self.title)
@@ -63,11 +71,11 @@ class Category(models.Model):
             return alias + '-' + str(append_number + 1)
 
     def category_rebuild(self, parent_id=None, left=0, level=0):
-        children = Category.objects.filter(parent_id=parent_id)
+        children = list(Category.objects.filter(parent_id=parent_id).values().all())
         right = left + 1
         if (len(children) > 0):
             for item in children:
-                right = self.category_rebuild(item.id, right, level + 1)
+                right = self.category_rebuild(item['id'], right, level + 1)
                 if (right == False):
                     return False
         Category.objects.filter(id=parent_id).update(left=left, right=right, level=level)
@@ -118,26 +126,27 @@ class Blog(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
+        print('save')
+        print(not self.id or not self.alias)
+        if (not self.id or not self.alias):
+            self.alias = self.generate_alias()
         super(Blog, self).save(*args, **kwargs)
 
+    def generate_alias(self):
+        alias = slugify(self.title)
+        same_alias_blog = Blog.objects.filter(alias__contains=alias).order_by('-id')
 
-class BlogImages(models.Model):
-    photo = models.ImageField(upload_to='blog/static/blog')
-    name = models.CharField(max_length=200, null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-
-    def save(self, *args, **kwargs):
-        if type(self.name) is not None:
-            self.name = "Image" + str(timezone.now())
+        if (len(same_alias_blog) == 0):
+            return alias
         else:
-            self.name = self.name + str(timezone.now())
-        super(BlogImages, self).save(*args, **kwargs)
+            appended_string = ((same_alias_blog[0]).alias).replace(alias, '')
+            if (len(appended_string) > 0):
+                appended_string = appended_string[1:]
+            else:
+                appended_string = '0'
 
-    class Meta:
-        verbose_name = "Image"
-        verbose_name_plural = "Images"
+            append_number = int(appended_string)
+            return alias + '-' + str(append_number + 1)
 
 
 class Content(models.Model):
@@ -155,7 +164,8 @@ class Content(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        self.alias = self.generate_alias(self.title)
+        if not self.id:
+            self.alias = self.generate_alias(self.title)
         super(Content, self).save(*args, **kwargs)
 
     def generate_alias(self, title):

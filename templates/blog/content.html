@@ -1,0 +1,56 @@
+{% extends 'blog/base_template.html' %}
+{% load static %}
+{% block content %}
+
+
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-md-9">
+                <div class="article">
+                    <h3 class="articletitle">{{ content.title }} </h3>
+                    {{ content.fulltext|safe }}
+
+
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="recommended ">
+                    <h4 class="topnews">Recommended</h4>
+                    <ul>
+                        {% for blog in recommended %}
+                            <li><a   href="{% url 'getBlog' slug=blog.alias %}">{{ blog.title }}</a>
+                            </li>
+                        {% endfor %}
+
+
+                    </ul>
+                </div>
+
+                <div class="recommended ">
+                    <h4 class="topnews">Top {{ category_name }} news</h4>
+                    <ul>
+                        {% for blog in topblogs %}
+                            <li><a   href="{% url 'getBlog' slug=blog.alias %}">{{ blog.title }}</a>
+                            </li>
+                        {% endfor %}
+
+
+                    </ul>
+                </div>
+
+
+                <div class="recommended ">
+                    <h4>Feel free to explore</h4>
+                    <ul>
+                        {% for blog in explore %}
+                            <li><a   href="{% url 'getBlog' slug=blog.alias %}">{{ blog.title }}</a>
+                            </li>
+                        {% endfor % %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

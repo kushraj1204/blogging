@@ -39,8 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Users',
     'administrator',
-    'rentalapp',
-    'blogs'
+    'blogs',
+
 ]
 
 MIDDLEWARE = [
@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'rental.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "rental",
+        "NAME": "blogging",
         "USER": "root",
         "PASSWORD": "",
         "OPTIONS": {

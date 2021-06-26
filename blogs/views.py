@@ -3,7 +3,7 @@ from django.core.paginator import Paginator
 from django.utils.translation import gettext
 
 # Create your views here.
-from blogs.models import Category, Blog
+from blogs.models import Category, Blog, Content
 
 
 def home(request):
@@ -46,3 +46,14 @@ def getBlog(request, slug):
     context = {"categories": categories, "blog": blog, "category_id": blog.cat_id_id,
                "metadescription": metadescription, "metakey": metakeywords}
     return render(request, "blog/blog.html", context)
+
+
+def getContent(request, slug):
+    categories = Category.objects.all().filter(level=2)
+    content = Content.objects.get(alias=slug)
+    metakeywords = content.metakey
+    metadescription = content.metadesc
+    context = {"categories": categories, "content": content,
+               "metadescription": metadescription, "metakey": metakeywords}
+    return render(request, "blog/content.html", context)
+

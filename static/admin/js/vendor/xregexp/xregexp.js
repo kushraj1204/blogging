@@ -1791,7 +1791,7 @@ module.exports = function(XRegExp) {
 
     /**
      * Adds support for Unicode's general categories. E.g., `\p{Lu}` or `\p{Uppercase Letter}`. See
-     * category descriptions in UAX #44 <http://unicode.org/reports/tr44/#GC_Values_Table>. Token
+     * category.py descriptions in UAX #44 <http://unicode.org/reports/tr44/#GC_Values_Table>. Token
      * names are case insensitive, and any spaces, hyphens, and underscores are ignored.
      *
      * Uses Unicode 9.0.0.
@@ -2115,7 +2115,7 @@ module.exports = function(XRegExp) {
     // Add non-generated data
     unicodeData.push({
         name: 'Assigned',
-        // Since this is defined as the inverse of Unicode category Cn (Unassigned), the Unicode
+        // Since this is defined as the inverse of Unicode category.py Cn (Unassigned), the Unicode
         // Categories addon is required to use this property
         inverseOf: 'Cn'
     });

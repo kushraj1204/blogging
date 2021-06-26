@@ -72,8 +72,11 @@ class GroupView(BaseAdminView):
     def delete(cls, request, pk):
         if request.method == 'POST':
             _post_data = request.POST
-            group = get_object_or_404(Group, pk=pk)
-            status = group.delete()
+            try:
+                group = get_object_or_404(Group, pk=pk)
+                status = group.delete()
+            except:
+                status = 0
             if status:
                 messages.success(request, 'Group Deleted Successfully')
                 return HttpResponse(json.dumps({'success': True}), content_type="application/json")

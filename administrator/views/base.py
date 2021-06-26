@@ -10,10 +10,13 @@ class BaseAdminView(View):
     loggedInUser = None
 
     def dispatch(self, request, *args, **kwargs):
+        print('super dispatch')
         session_menu = kwargs['session_menu'] if "session_menu" in kwargs else ''
         session_submenu = kwargs['session_submenu'] if "session_submenu" in kwargs else ''
         request.session['menu'] = session_menu
         request.session['submenu'] = session_submenu
+        print(session_menu)
+        print('bho hai ta')
 
         permission_required = kwargs['permission_required'] if "permission_required" in kwargs else []
         permission_required = set(permission_required)
@@ -29,7 +32,8 @@ class BaseAdminView(View):
             return redirect('adminLogin')
 
         else:
-            id = request.session.get('loggedInUser')['id']
+            self.loggedInUser = request.session.get('loggedInUser')
+            id = self.loggedInUser['id']
             user = CustomUser.objects.get(pk=id)
             permissions_access = user.get_all_permissions()
             if not user.is_superuser:

@@ -5,7 +5,7 @@ class BaseService:
 
     def affirm_user_access(self, exists):
         session_data = {}
-        if not exists['is_superuser']: #superuser doesnt need any special permissions to do anything
+        if not exists['is_superuser']:  # superuser doesnt need any special permissions to do anything
             if not exists['is_staff']:
                 return {'data': False, 'message': 'Staff status has not been activated yet'}
             if not exists['is_active']:
@@ -20,7 +20,7 @@ class BaseService:
         for datakey, eachdata in post_data.items():
             return_data[datakey] = dict()
             field_dict = dict()
-            field_dict['value'] = eachdata
+            field_dict['value'] = eachdata if eachdata is not None else ""
             field_dict['error'] = None
             if errors:
                 for errorkey, eacherror in errors.items():
@@ -31,5 +31,3 @@ class BaseService:
                         pass
             return_data[datakey] = field_dict
         return return_data
-
-

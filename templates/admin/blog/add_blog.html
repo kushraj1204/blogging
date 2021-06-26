@@ -1,0 +1,363 @@
+{% extends "admin/admin_layout.html" %}
+{% load static %}
+{% load custom_tags %}
+{% block content %}
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            {% if postData.id.value %}
+                Edit Blog
+            {% else %}
+                Add Blog
+            {% endif %}
+        </h1>
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6 pull-left">
+                    <div class="row breadcrumb ">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{% url "adminHome" %}">Home</a>
+                            </li>
+                            <li class="breadcrumb-item active">
+                                {% if postData.id.value %}
+                                    Edit Blog
+                                {% else %}
+                                    Add Blog
+                                {% endif %}
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="row float-sm-right">
+                        <a href="{% url 'adminBlogList' %}" class="btn btn-default"><i
+                                class="fa fa-angle-left"></i> Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="help-block">
+
+        </div>
+
+        <form method="post" accept-charset="utf-8"
+              enctype="multipart/form-data">
+            <div class="row">
+                {% csrf_token %}
+                <div class="col-md-12">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title"> {% if postData.id.value %}
+                                {{ postdata.title.value }}
+                            {% else %}
+                                Add Blog
+                            {% endif %}</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="title">Title</label>
+                                <input type="hidden" id="id" name="id" class="form-control"
+                                       value="{{ postData.id.value }}">
+                                <input type="text" id="title" name="title"
+                                       class="form-control {% if postData.title.error %}is-invalid{% endif %}"
+                                       value="{{ postData.title.value }}">
+                                {% if postData.title.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.title.error }}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+                            <div class="form-group">
+                                <label for="title">Intro Text</label>
+                                <input type="text" id="introtext" name="introtext"
+                                       class="form-control {% if postData.introtext.error %}is-invalid{% endif %}"
+                                       value="{{ postData.introtext.value }}">
+                                {% if postData.introtext.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.introtext.error }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label for="parent">Category</label>
+
+                                <select class="custom-select {% if postData.category.error %}is-invalid{% endif %}"
+                                        name="cat_id" id="cat_id"
+                                >
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}"
+                                                {% ifequal postData.cat_id_id.value category.id %}selected {% endifequal %}>{{ category.title }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if postData.category.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.category.error }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label>Display Photo</label>
+                                <div class="custom-file">
+                                    <input type="file" id="image" name="image" class="custom-file-input"
+                                           accept=".png, .jpg, .jpeg">
+                                    <label for="image" class="custom-file-label">Choose Image</label>
+                                </div>
+                                <div class="spinner-border text-primary imageuploadspinner" role="status"
+                                     style="display: none">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                                <div class="p-1 newdisplayphoto" style="display: none">
+                                    <img id="newdisplayphotopreview" src="{% static 'images/icon.png' %}" class=""
+                                         width="200"
+                                         height="150"/>
+                                    <button type="button" class="close" aria-label="Close" id="removeUploadedPhoto">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+
+                                <input type="hidden" name="displayphoto" id="displayphoto"
+                                       value="{{ postData.displayphoto.value }}">
+                                <input id="displayphoto_path" type="hidden"
+                                       value="{{ postData.displayphoto.value }}" readonly>
+                                {% if postData.displayphoto.value %}
+                                    <div class="p-1 saveddisplayphoto">
+                                        <img id="preview" src="{{ MEDIA_URL }}{{ postData.displayphoto.value }}"
+                                             class=""
+                                             width="200"
+                                             height="150"/>
+                                    </div>
+                                {% else %}
+
+                                {% endif %}
+
+                            </div>
+
+                            <label>Blog Content</label>
+                            <nav>
+                                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                    <a class="nav-item nav-link active" id="nav-researchdata-tab" data-toggle="tab"
+                                       href="#nav-researchdata" role="tab" aria-controls="nav-researchdata"
+                                       aria-selected="true">Research Data</a>
+                                    <a class="nav-item nav-link" id="nav-content-tab" data-toggle="tab"
+                                       href="#nav-content" role="tab" aria-controls="nav-content" aria-selected="false">Content</a>
+                                </div>
+                            </nav>
+                            <div class="tab-content" id="nav-tabContent">
+                                <div class="tab-pane fade show active" id="nav-researchdata" role="tabpanel"
+                                     aria-labelledby="nav-researchdata-tab">
+                                    <div class="form-group">
+
+                                        <textarea class="form-control wysiwyg" id="research_data" name="research_data"
+                                                  rows="4">{{ postData.research_data.value }}</textarea>
+                                    </div>
+
+                                </div>
+                                <div class="tab-pane fade" id="nav-content" role="tabpanel"
+                                     aria-labelledby="nav-content-tab">
+                                    <div class="form-group">
+
+                                        <textarea class="form-control wysiwyg" id="fulltext" name="fulltext"
+                                                  rows="4">{{ postData.fulltext.value }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="metakey">Meta Keywords</label>
+                                <textarea class="form-control" id="metakey" name="metakey"
+                                          rows="1">{{ postData.metakey.value }}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="metadesc">Meta Description</label>
+                                <textarea class="form-control" id="metadesc" name="metadesc"
+                                          rows="4">{{ postData.metadesc.value }}</textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input"
+                                           value="{% if postData.published.value %} 1 {% else %} 0{% endif %}"
+                                           name="published_chkbox"
+                                           id="published_chkbox" {% if postData.published.value %}
+                                           checked{% endif %}>
+                                    <label class="custom-control-label" for="published_chkbox">Published</label>
+                                    <input type="hidden" id="published" name="published"
+                                           value="{{ postData.published.value }}">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input"
+                                           value="{% if postData.featured.value %} 1 {% else %} 0{% endif %}"
+                                           name="featured_chkbox"
+                                           id="featured_chkbox" {% if postData.featured.value %}
+                                           checked{% endif %}>
+                                    <label class="custom-control-label" for="featured_chkbox">Featured</label>
+                                    <input type="hidden" id="featured" name="featured"
+                                           value="{{ postData.featured.value }}">
+                                </div>
+                            </div>
+
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+
+
+            </div>
+
+            <div class="pb-5">
+                {% if postData.id.value > 0 %}
+                    <a href="#" class="btn btn-danger pull-right deleteContent">Delete</a>
+                {% endif %}
+                <a href="{% url 'adminBlogList' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">{% if postData.id.value %}Update{% else %}Save{% endif %}
+                </button>
+
+            </div>
+        </form>
+        <form id="deleteForm">
+            <input type="hidden" value="{{ postData.id.value }}" name="id">
+            {% csrf_token %}
+        </form>
+    </section>
+    <!-- /.content -->
+{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap-duallistbox.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/duallist-plus.css' %}">
+{% endblock %}
+{% block script %}
+    <script src="{% static 'js/jquery.bootstrap-duallistbox.js' %}"></script>
+    <script>
+
+        $(document).ready(function () {
+
+            $('#id_permissions').bootstrapDualListbox({
+                nonSelectedListLabel: 'Non-selected',
+                selectedListLabel: 'Selected',
+                preserveSelectionOnMove: 'moved',
+                moveOnSelect: false,
+                moveAllLabel: 'Move all',
+                removeAllLabel: 'Remove all',
+                selectorMinimalHeight: 250,
+            });
+
+            deleteContent();
+            profileImageUpload();
+            removeUploadedPhoto();
+            checkBoxControls();
+
+        });
+
+        function removeUploadedPhoto() {
+            $('#removeUploadedPhoto').click(function () {
+                var r = confirm("Are you sure?? The uploaded  image will be discarded.");
+                if (r == true) {
+                    $(".newdisplayphoto").hide(); // Display image element
+                    $(".saveddisplayphoto").show();
+                    $("#displayphoto").val($("#displayphoto_path").val()) // Display image element
+
+                } else {
+
+                }
+            })
+        }
+
+        function checkBoxControls() {
+            $('input[type=checkbox]').on('change', function () {
+                var id = this.id;
+                var inputid = id.replace('_chkbox', '')
+                var prevState = $('#' + id).val();
+                console.log(prevState)
+                $('#' + id).val((prevState == 1) ? 0 : 1);
+                $('#' + inputid).val((prevState == 1) ? 'False' : 'True');
+                {#$('#' + id).prop('checked', (prevState == 1) ? false : true);#}
+            });
+        }
+
+        function profileImageUpload() {
+            $("#image").change(function () {
+                var fd = new FormData();
+                var files = $('#image')[0].files;
+
+                // Check file selected or not
+                if (files.length > 0) {
+                    $(".imageuploadspinner").show();
+                    fd.append('file', files[0]);
+                    fd.append('csrfmiddlewaretoken', '{{csrf_token}}');
+                    fd.append('imagetype', 'common_media');
+                    $.ajax({
+                        url: '{% url 'imageUpload' %}',
+                        type: 'post',
+                        data: fd,
+                        contentType: false,
+                        processData: false,
+                        success: function (response) {
+                            console.log(response)
+                            if (response.result) {
+                                $("#newdisplayphotopreview").attr("src", {{ MEDIA_URL }}+response.data.saved_filename);
+                                $(".newdisplayphoto").show(); // Display image element
+                                $(".saveddisplayphoto").hide();
+                                $(".imageuploadspinner").hide();
+                                $(".preview img").show(); // Display image element
+                                $("#displayphoto").val(response.data.saved_filename); // Display image element
+
+                            } else {
+                                $(".imageuploadspinner").hide();
+                                alert('There was in issue in uploading the image');
+
+                            }
+                        },
+                    });
+                } else {
+                    alert("Please select a file.");
+                }
+            });
+
+        }
+
+
+        function deleteContent() {
+            $('.deleteContent').on('click', function (e) {
+                e.preventDefault();
+                var r = confirm("Are you sure you want to delete this content!");
+                if (r == true) {
+                    let data = ($('#deleteForm').serializeArray());
+                    if ({{ postData.id.value }} == 0)
+                    {
+                        return
+                    }
+                    $.ajax({
+                        url: '{% url 'adminBlogDelete' pk=postData.id.value %}',
+                        data: data,
+                        type: 'POST',
+                        dataType: 'json',
+                        success: function (data) {
+                            window.location.replace("{% url 'adminBlogList' %}")
+                        },
+                        error: function (err) {
+                            location.reload();
+                        },
+
+                    });
+                }
+            })
+        }
+
+    </script>
+{% endblock %}

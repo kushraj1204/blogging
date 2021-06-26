@@ -1,0 +1,45 @@
+<footer>
+
+    <div class="copyright">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <span>Copyright © 2021, All Right Reserved Kush</span>
+                </div>
+                <div class="col-md-6">
+                    <div class="copyright-menu">
+                        <ul>
+                            <li>
+                                <a href="{% url 'home' %}">Home</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'getContent' slug='terms-and-conditions' %}">Terms</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'getContent' slug='privacy-policy' %}">Privacy Policy</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'getContent' slug='contact-us' %}">Contact</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="back-to-top" class="back-to-top">
+        <button class="btn btn-dark" title="Back to Top" style="display: block;">
+            <i class="fa fa-angle-up"></i>
+        </button>
+    </div>
+</footer>
+
+<script>
+    $('document').ready(function () {
+        $("#back-to-top").on('click',function () {
+            $("html, body").animate({scrollTop: 0}, "slow");
+            return false;
+        });
+
+    });
+</script>
