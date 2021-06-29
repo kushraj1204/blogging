@@ -79,12 +79,13 @@ WSGI_APPLICATION = 'rental.wsgi.application'
 
 DATABASES = {
     "default": {
-       'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'd8eh197g2b8579',
-        'USER': 'wevwasxitodwrl',
-        'PASSWORD': '58db8b26ad9d9017cfd2743d215dc45c8ebd40fb31a2bf612bd7a1fbbb6579f4',
-        'HOST': 'ec2-52-23-45-36.compute-1.amazonaws.com',
-        'POST': '',
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "blogging",
+        "USER": "root",
+        "PASSWORD": "",
+        "OPTIONS": {
+            "sql_mode": "traditional",
+        },
     }
 }
 

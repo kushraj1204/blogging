@@ -28,7 +28,7 @@ class BlogView(BaseAdminView):
         if keyword is None:
             keyword = ''
         blogs = Blog.objects.all().filter(
-            Q(title__icontains=keyword)).order_by('id')
+            Q(title__icontains=keyword)).order_by('published','edited','authored','researched','-id')
         paginator = Paginator(blogs, 10)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
@@ -180,31 +180,34 @@ class BlogView(BaseAdminView):
         if not blog.id:
             return_data['version'] = 1
         if return_data['researched'] and not blog.researched:
-            return_data['researched_by'] = loggedInUser
+            return_data['researched_by_id'] = loggedInUser
             if 2 not in groups and not _loggedInUser['is_superuser']:
-                return_data['researched_by'] = None
+                return_data['researched_by_id'] = None
                 return_data['researched'] = False
         if return_data['authored'] and not blog.authored:
-            return_data['authored_by'] = loggedInUser
+            return_data['authored_by_id'] = loggedInUser
             if (3 not in groups and not _loggedInUser['is_superuser']) or not return_data['researched']:
-                return_data['authored_by'] = None
+                return_data['authored_by_id'] = None
                 return_data['authored'] = False
         if return_data['edited'] and not blog.edited:
-            return_data['edited_by'] = loggedInUser
+            return_data['edited_by_id'] = loggedInUser
             if (4 not in groups and not _loggedInUser['is_superuser']) or not return_data['authored']:
-                return_data['edited_by'] = None
+                return_data['edited_by_id'] = None
                 return_data['edited'] = False
         if return_data['published'] and not blog.published or not _loggedInUser['is_superuser']:
-            return_data['published_by'] = loggedInUser
+            return_data['published_by_id'] = loggedInUser
             return_data['published_date'] = timezone.now()
             if (5 not in groups and not _loggedInUser['is_superuser']) or not return_data['edited']:
-                return_data['published_by'] = None
+                return_data['published_by_id'] = None
                 return_data['published'] = False
         if not blog.id:
-            return_data['created_by'] = loggedInUser
-        return_data['featured'] = True if (post_data['featured'] == 'True') else False
-        return_data['modified_by'] = loggedInUser
+            return_data['created_by_id'] = loggedInUser
 
+        if not bool(set([3, 4, 5]) & set(groups)) and not _loggedInUser['is_superuser']:
+            return_data.pop('fulltext')
+
+        return_data['featured'] = True if (post_data['featured'] == 'True') else False
+        return_data['modified_by_id'] = loggedInUser
         tags = post_data['tags']
         return_data['tags'] = tags
         if tags:
