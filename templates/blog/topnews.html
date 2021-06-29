@@ -1,0 +1,11 @@
+{% if  topblogs %}
+    <div class="recommended ">
+        <h4>Feel free to explore</h4>
+        <ul>
+            {% for blog in topblogs %}
+                <li><a href="{% url 'getBlog' slug=blog.alias %}">{{ blog.title }}</a>
+                </li><br>
+            {% endfor % %}
+        </ul>
+    </div>
+{% endif %}

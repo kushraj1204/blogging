@@ -9,13 +9,13 @@ from blogs.models import Blog
 
 class BlogService(BaseService):
 
-    def saveBlog(self, blog_data, pk=0, loggedInuser=None):
+    def saveBlog(self, blog_data, pk=0, blog=None):
         if pk:
             try:
                 update_data = blog_data
-                blog = Blog.objects.get(pk=pk)
                 if not blog.alias:
                     update_data['alias'] = blog.generate_alias()
+                update_data['version'] = blog.version + 1
                 status = Blog.objects.filter(pk=pk).update(**update_data)
                 if status:
                     return {'id': pk, 'success': True}
@@ -31,9 +31,11 @@ class BlogService(BaseService):
                 blog = Blog(**update_data)
                 print(blog)
                 blog.alias = blog.generate_alias()
-                status = blog.save()
-                if status:
+                try:
+                    blog.save()
                     return {'id': blog.pk, 'success': True}
+                except:
+                    pass
             except Exception as e:
                 print(e)
                 pass

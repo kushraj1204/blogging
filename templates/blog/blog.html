@@ -4,9 +4,18 @@
 
 
     <div class="container-fluid">
-        <div class="row">
 
+        <div class="row">
             <div class="col-md-9">
+                <nav aria-label="breadcrumb" class="breadcrumbstyle">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url "home" %}">Home</a></li>
+                        <li class="breadcrumb-item"><a
+                                href="{% url "blogsByCategory" slug=category_slug %}">{{ blog.cat_id }}</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ blog.title }}</li>
+                    </ol>
+                </nav>
                 <div class="article">
                     <h3 class="articletitle">{{ blog.title }} </h3>
                     {% if blog.displayphoto %}
@@ -18,42 +27,20 @@
 
 
                 </div>
+                {% if blog.tags %}
+
+                    <span class="badge badge-success">Related Tags</span>
+                    {% for tag in blog.tags %}
+
+                        <a href="{% url "blogsByTag" slug=tag %}">
+                            <span class="badge badge-primary">{{ tag }}</span>
+                        </a>
+                    {% endfor % %}
+                {% endif %}
             </div>
             <div class="col-md-3">
-                <div class="recommended ">
-                    <h4 class="topnews">Recommended</h4>
-                    <ul>
-                        {% for blog in recommended %}
-                            <li><a  href="{% url 'getBlog' slug=blog.alias %}">{{ blog.title }}</a>
-                            </li>
-                        {% endfor %}
-
-
-                    </ul>
-                </div>
-
-                <div class="recommended ">
-                    <h4 class="topnews">Top {{ category_name }} news</h4>
-                    <ul>
-                        {% for blog in topblogs %}
-                            <li><a  href="{% url 'getBlog' slug=blog.alias %}">{{ blog.title }}</a>
-                            </li>
-                        {% endfor %}
-
-
-                    </ul>
-                </div>
-
-
-                <div class="recommended ">
-                    <h4>Feel free to explore</h4>
-                    <ul>
-                        {% for blog in explore %}
-                            <li><a  href="{% url 'getBlog' slug=blog.alias %}">{{ blog.title }}</a>
-                            </li>
-                        {% endfor % %}
-                    </ul>
-                </div>
+                {% include 'blog/recommended.html' %}
+                {% include 'blog/explore.html' %}
             </div>
         </div>
     </div>

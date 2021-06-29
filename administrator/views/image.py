@@ -9,15 +9,11 @@ from django.http import HttpResponse
 import json
 
 from administrator.views.base import BaseAdminView
-from PIL import Image
 from django.contrib.sites.shortcuts import get_current_site
 
 
 class Images(BaseAdminView):
 
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs, session_menu='Image Gallery', session_submenu='',
-                                permission_required=[])
 
     def post(self, request):
         imagetype = request.POST.get('imagetype')

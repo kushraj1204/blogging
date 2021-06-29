@@ -1,0 +1,12 @@
+<div class="recommended ">
+    <h4>Recommended</h4>
+    {% if not recommended %}
+        No new articles
+    {% endif %}
+    <ul>
+        {% for blog in recommended %}
+            <li><a href="{% url 'getBlog' slug=blog.alias %}">{{ blog.title }}</a>
+            </li><br>
+        {% endfor % %}
+    </ul>
+</div>

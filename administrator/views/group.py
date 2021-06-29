@@ -11,13 +11,12 @@ from django.contrib.auth.models import Group
 
 
 class GroupView(BaseAdminView):
-    def dispatch(self, request, *args, **kwargs):
-        request.session['menu'] = 'Group'
-        return super().dispatch(request, *args, **kwargs, session_menu='Group', session_submenu='',
-                                permission_required=[])
 
     @classmethod
     def get_list(cls, request):
+        response=cls.pre_function(cls,request, session_menu='Group', session_submenu='', permissions_required=['auth.view_group'])
+        if not response['status']:
+            return response['action']
         keyword = request.GET.get('keyword')
         filter = {'keyword': keyword if keyword is not None else ""}
         if keyword is None:
@@ -33,6 +32,9 @@ class GroupView(BaseAdminView):
 
     @classmethod
     def add(cls, request):
+        response=cls.pre_function(cls,request, session_menu='Group', session_submenu='', permissions_required=['auth.add_group'])
+        if not response['status']:
+            return response['action']
         if request.method == 'POST':
             _post_data = request.POST
             post_data = _post_data.dict()
@@ -70,6 +72,11 @@ class GroupView(BaseAdminView):
 
     @classmethod
     def delete(cls, request, pk):
+        response=cls.pre_function(cls,request, session_menu='Group', session_submenu='', permissions_required=['auth.delete_group'])
+        if not response['status']:
+            messages.error(request, 'You are unauthorized to complete this action')
+            return HttpResponse(json.dumps({'success': False}), content_type="application/json")
+
         if request.method == 'POST':
             _post_data = request.POST
             try:
@@ -87,6 +94,9 @@ class GroupView(BaseAdminView):
             return redirect('adminGroupDetail', pk=pk)
 
     def get(self, request, pk):
+        response=self.pre_function(request, session_menu='Group', session_submenu='', permissions_required=['auth.view_group'])
+        if not response['status']:
+            return response['action']
         if not pk:
             return redirect('adminGroupAdd')
         user_service = UserService()
@@ -100,6 +110,9 @@ class GroupView(BaseAdminView):
                       {'postData': post_data, 'permissions': permissions})
 
     def post(self, request, pk):
+        response=self.pre_function(request, session_menu='Group', session_submenu='', permissions_required=['auth.change_group'])
+        if not response['status']:
+            return response['action']
         _post_data = request.POST
         permissions_input = _post_data.getlist('permissions')
         _permissions = []

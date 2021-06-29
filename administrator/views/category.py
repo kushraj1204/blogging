@@ -15,12 +15,12 @@ from blogs.models import Category
 class CategoryView(BaseAdminView):
     category_service = CategoryService()
 
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs, session_menu='Category', session_submenu='',
-                                permission_required=[])
-
     @classmethod
     def get_list(cls, request):
+        response = cls.pre_function(cls, request, session_menu='Category', session_submenu='',
+                                    permissions_required=['blogs.change_category'])
+        if not response['status']:
+            return response['action']
         keyword = request.GET.get('keyword')
         filter = {'keyword': keyword if keyword is not None else ""}
         if keyword is None:
@@ -36,7 +36,10 @@ class CategoryView(BaseAdminView):
 
     @classmethod
     def add(cls, request):
-
+        response = cls.pre_function(cls, request, session_menu='Category', session_submenu='',
+                                    permissions_required=['blogs.add_category'])
+        if not response['status']:
+            return response['action']
         if request.method == 'POST':
             _post_data = request.POST
             post_data = _post_data.dict()
@@ -77,6 +80,12 @@ class CategoryView(BaseAdminView):
 
     @classmethod
     def delete(cls, request, pk):
+        response = cls.pre_function(cls, request, session_menu='Category', session_submenu='',
+                                    permissions_required=['blogs.delete_category'])
+        if not response['status']:
+            messages.error(request, 'You are unauthorized to complete this action')
+            return HttpResponse(json.dumps({'success': False}), content_type="application/json")
+
         if pk == 1:
             messages.error(request, 'Root category.py cannot be altered')
             return HttpResponse(json.dumps({'success': False}), content_type="application/json")
@@ -94,8 +103,13 @@ class CategoryView(BaseAdminView):
             return HttpResponse(json.dumps({'success': False}), content_type="application/json")
 
     def get(self, request, pk):
+
         if not pk:
             return redirect('adminCategoryAdd')
+        response = self.pre_function(request, session_menu='Category', session_submenu='',
+                                     permissions_required=['blogs.view_category'])
+        if not response['status']:
+            return response['action']
         category = get_object_or_404(Category, pk=pk)
         post_data = self.category_service.getPostData(vars(category), None)
         parents = self.category_service.get_categories()
@@ -104,6 +118,10 @@ class CategoryView(BaseAdminView):
                       {'postData': post_data, 'parents': parents})
 
     def post(self, request, pk):
+        response = self.pre_function(request, session_menu='Category', session_submenu='',
+                                     permissions_required=['blogs.change_category'])
+        if not response['status']:
+            return response['action']
         _post_data = request.POST
         post_data = _post_data.dict()
         post_data.pop('csrfmiddlewaretoken')

@@ -36,3 +36,4 @@ urlpatterns = [
     path('settings', views.SettingsView.as_view(), name='adminSettings'),
 
 ]
+# handler404 = views.BlogView.handleError

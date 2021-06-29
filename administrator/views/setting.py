@@ -9,11 +9,12 @@ import json
 
 
 class SettingsView(BaseAdminView):
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs, session_menu='Settings', session_submenu='',
-                                permission_required=[])
 
-    def get(self,request):
+    def get(self, request):
+        response=self.pre_function(request, session_menu='Settings', session_submenu='',
+                          permissions_required=['administrator.view_settings'])
+        if not response['status']:
+            return response['action']
         user_service = UserService()
         settings = get_object_or_404(Settings, pk=1)
         post_data = user_service.getPostData(vars(settings), None)
@@ -21,7 +22,11 @@ class SettingsView(BaseAdminView):
                       {'postData': post_data})
 
     def post(self, request):
-        pk=1
+        response=self.pre_function(request, session_menu='Settings', session_submenu='',
+                          permissions_required=['administrator.change_settings'])
+        if not response['status']:
+            return response['action']
+        pk = 1
         _post_data = request.POST
         post_data = _post_data.dict()
         post_data.pop('csrfmiddlewaretoken')
@@ -37,11 +42,11 @@ class SettingsView(BaseAdminView):
                 messages.error(request, 'Error occurred while saving settings')
                 post_data = user_service.getPostData(post_data, None)
                 return render(request, 'admin/settings/index.html',
-                              {'postData': post_data,})
+                              {'postData': post_data, })
 
         else:
             messages.error(request, 'Form validation Error. Please correct the below mentioned errors')
             errors = json.loads(post_form.errors.as_json())  # errors to json and then to dict
             post_data = user_service.getPostData(post_data, errors)
             return render(request, 'admin/settings/index.html',
-                          {'postData': post_data,})
+                          {'postData': post_data, })

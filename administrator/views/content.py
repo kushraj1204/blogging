@@ -12,12 +12,13 @@ from blogs.models import Content
 
 
 class ContentView(BaseAdminView):
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs, session_menu='Content', session_submenu='',
-                                permission_required=[])
 
     @classmethod
     def get_list(cls, request):
+        response=cls.pre_function(cls,request, session_menu='Content', session_submenu='',
+                          permissions_required=['blogs.view_content'])
+        if not response['status']:
+            return response['action']
         keyword = request.GET.get('keyword')
         filter = {'keyword': keyword if keyword is not None else ""}
         if keyword is None:
@@ -33,6 +34,10 @@ class ContentView(BaseAdminView):
 
     @classmethod
     def add(cls, request):
+        response=cls.pre_function(cls, request, session_menu='Content', session_submenu='',
+                         permissions_required=['blogs.add_content'])
+        if not response['status']:
+            return response['action']
         if request.method == 'POST':
             _post_data = request.POST
             post_data = _post_data.dict()
@@ -70,6 +75,12 @@ class ContentView(BaseAdminView):
 
     @classmethod
     def delete(cls, request, pk):
+        response=cls.pre_function(cls,request, session_menu='Content', session_submenu='',
+                          permissions_required=['blogs.delete_content'])
+        if not response['status']:
+            messages.error(request, 'You are unauthorized to complete this action')
+            return HttpResponse(json.dumps({'success': False}), content_type="application/json")
+
         _post_data = request.POST
         try:
             content = get_object_or_404(Content, pk=pk)
@@ -86,6 +97,10 @@ class ContentView(BaseAdminView):
     def get(self, request, pk):
         if not pk:
             return redirect('adminContentAdd')
+        response=self.pre_function(request, session_menu='Content', session_submenu='',
+                          permissions_required=['blogs.view_content'])
+        if not response['status']:
+            return response['action']
         user_service = UserService()
         content = get_object_or_404(Content, pk=pk)
         post_data = user_service.getPostData(vars(content), None)
@@ -94,6 +109,10 @@ class ContentView(BaseAdminView):
                       {'postData': post_data, })
 
     def post(self, request, pk):
+        response=self.pre_function(request, session_menu='Content', session_submenu='',
+                          permissions_required=['blogs.change_content'])
+        if not response['status']:
+            return response['action']
         _post_data = request.POST
         post_data = _post_data.dict()
         post_data.pop('csrfmiddlewaretoken')

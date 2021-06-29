@@ -69,6 +69,8 @@
                                 <label for="title">Title</label>
                                 <input type="hidden" id="id" name="id" class="form-control"
                                        value="{{ postData.id.value }}">
+                                <input type="hidden" id="version" name="version"
+                                       value="{{ postData.version.value }}">
                                 <input type="text" id="title" name="title"
                                        class="form-control {% if postData.title.error %}is-invalid{% endif %}"
                                        value="{{ postData.title.value }}">
@@ -107,6 +109,13 @@
                                     </div>
                                 {% endif %}
                             </div>
+                            <div class="form-group">
+                                <label for="fulltext">Tags</label>
+                                <input type="text" id="tags" name="tags" data-role="tagsinput"
+                                       class="form-control {% if postData.tags.error %}is-invalid{% endif %}"
+                                       value="{{ postData.tags.value }}">
+                            </div>
+
                             <div class="form-group">
                                 <label>Display Photo</label>
                                 <div class="custom-file">
@@ -197,6 +206,42 @@
                                            value="{{ postData.published.value }}">
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input"
+                                           value="{% if postData.edited.value %} 1 {% else %} 0{% endif %}"
+                                           name="edited_chkbox"
+                                           id="edited_chkbox" {% if postData.edited.value %}
+                                           checked{% endif %}>
+                                    <label class="custom-control-label" for="edited_chkbox">Edited</label>
+                                    <input type="hidden" id="edited" name="edited"
+                                           value="{{ postData.edited.value }}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input"
+                                           value="{% if postData.authored.value %} 1 {% else %} 0{% endif %}"
+                                           name="authored_chkbox"
+                                           id="authored_chkbox" {% if postData.authored.value %}
+                                           checked{% endif %}>
+                                    <label class="custom-control-label" for="authored_chkbox">Authored</label>
+                                    <input type="hidden" id="authored" name="authored"
+                                           value="{{ postData.authored.value }}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+                                    <input type="checkbox" class="custom-control-input"
+                                           value="{% if postData.researched.value %} 1 {% else %} 0{% endif %}"
+                                           name="researched_chkbox"
+                                           id="researched_chkbox" {% if postData.researched.value %}
+                                           checked{% endif %}>
+                                    <label class="custom-control-label" for="researched_chkbox">Researched</label>
+                                    <input type="hidden" id="researched" name="researched"
+                                           value="{{ postData.researched.value }}">
+                                </div>
+                            </div>
 
                             <div class="form-group">
                                 <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
@@ -240,9 +285,11 @@
 {% block styles %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap-duallistbox.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/duallist-plus.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'js/tags/tagsinput.css' %}">
 {% endblock %}
 {% block script %}
     <script src="{% static 'js/jquery.bootstrap-duallistbox.js' %}"></script>
+    <script src="{% static 'js/tags/tagsinput.js' %}"></script>
     <script>
 
         $(document).ready(function () {
@@ -338,7 +385,8 @@
                 var r = confirm("Are you sure you want to delete this content!");
                 if (r == true) {
                     let data = ($('#deleteForm').serializeArray());
-                    if ({{ postData.id.value }} == 0)
+                    if ({{ postData.id.value }} == 0
+                )
                     {
                         return
                     }

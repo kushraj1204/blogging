@@ -10,12 +10,13 @@ import json
 
 
 class UserView(BaseAdminView):
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs, session_menu='User', session_submenu='',
-                                permission_required=[])
 
     @classmethod
     def get_list(cls, request):
+        response = cls.pre_function(cls, request, session_menu='User', session_submenu='',
+                                    permissions_required=['auth.view_customuser'])
+        if not response['status']:
+            return response['action']
         keyword = request.GET.get('keyword')
         filter = {'keyword': keyword if keyword is not None else ""}
         if keyword is None:
@@ -31,11 +32,15 @@ class UserView(BaseAdminView):
 
     @classmethod
     def add(cls, request):
+        response = cls.pre_function(cls, request, session_menu='User', session_submenu='',
+                                    permissions_required=['auth.add_customuser'])
+        if not response['status']:
+            return response['action']
         if request.method == 'POST':
             user_service = UserService()
             _post_data = request.POST
             post_data = _post_data.dict()
-            post_data = cls.get_filtered_input(post_data)
+            post_data = cls.get_filtered_input(post_data,request.session.get('loggedInUser'))
             if not post_data['phone']:
                 post_data.pop('phone')
 
@@ -74,6 +79,8 @@ class UserView(BaseAdminView):
 
     @classmethod
     def delete(cls, request, pk):
+        response = cls.pre_function(cls, request, session_menu='User', session_submenu='',
+                                    permissions_required=['auth.delete_customuser'])
         if request.method == 'POST':
             _post_data = request.POST
             try:
@@ -91,8 +98,15 @@ class UserView(BaseAdminView):
             return redirect('adminUserDetail', pk=pk)
 
     def get(self, request, pk):
+
         if not pk:
             return redirect('adminUserAdd')
+        response = self.pre_function(request, session_menu='User', session_submenu='',
+                                     permissions_required=['auth.view_customuser'], set_messages=False)
+        if not response['status']:
+            if response['message'] == 'unauthorized':
+                if request.session.get('loggedInUser')['id'] != pk:
+                    return response['action']
         user_service = UserService()
         user = user_service.getById(pk)
         user_form = UserUpdateForm(instance=user)
@@ -105,24 +119,28 @@ class UserView(BaseAdminView):
                       {'postData': post_data, 'user_groups': user_groups, 'user_permissions': user_permissions})
 
     def post(self, request, pk):
+        response = self.pre_function(request, session_menu='User', session_submenu='',
+                                     permissions_required=['auth.change_customuser'], set_messages=False)
+        if not response['status']:
+            if response['message'] == 'unauthorized':
+                if request.session.get('loggedInUser')['id'] != pk:
+                    return response['action']
         user_service = UserService()
         _post_data = request.POST
-        user_permissions_input = _post_data.getlist('user_permissions')
-        user_groups_input = _post_data.getlist('groups')
-        _user_permissions = []
-        _user_groups = []
-        for x in user_groups_input:
-            _user_groups.append(x)
-        for x in user_permissions_input:
-            _user_permissions.append(x)
 
         post_data = _post_data.dict()
-        post_data = self.get_filtered_input(post_data)
-        print('filtered input')
-        print(_user_permissions)
-        print(_user_groups)
-        post_data['groups'] = _user_groups
-        post_data['user_permissions'] = _user_permissions
+        post_data = self.get_filtered_input(post_data,request.session.get('loggedInUser'))
+        if request.session.get('loggedInUser')['is_superuser']:
+            user_permissions_input = _post_data.getlist('user_permissions')
+            user_groups_input = _post_data.getlist('groups')
+            _user_permissions = []
+            _user_groups = []
+            for x in user_groups_input:
+                _user_groups.append(x)
+            for x in user_permissions_input:
+                _user_permissions.append(x)
+            post_data['groups'] = _user_groups
+            post_data['user_permissions'] = _user_permissions
 
         if not post_data['phone']:
             post_data.pop('phone')
@@ -157,7 +175,7 @@ class UserView(BaseAdminView):
                            'user_permissions': user_permissions})
 
     @staticmethod
-    def get_filtered_input(post_data):
+    def get_filtered_input(post_data,loggedInUser):
         return_data = dict()
         return_data['id'] = post_data['id']
         return_data['first_name'] = post_data['first_name']
@@ -172,10 +190,11 @@ class UserView(BaseAdminView):
         return_data['email'] = post_data['email']
         return_data['username'] = post_data['username']
         return_data['password'] = post_data['password']
-        return_data['is_superuser'] = True if (post_data['is_superuser'] == 'True') else False
-        return_data['is_staff'] = True if (post_data['is_staff'] == 'True') else False
-        return_data['is_active'] = True if (post_data['is_active'] == 'True') else False
-        return_data['phone_activated'] = True if (post_data['phone_activated'] == 'True') else False
-        return_data['sendEmail'] = True if (post_data['sendEmail'] == 'True') else False
-        return_data['sendSMS'] = True if (post_data['sendSMS'] == 'True') else False
+        if loggedInUser['is_superuser']:
+            return_data['is_superuser'] = True if (post_data['is_superuser'] == 'True') else False
+            return_data['is_staff'] = True if (post_data['is_staff'] == 'True') else False
+            return_data['is_active'] = True if (post_data['is_active'] == 'True') else False
+            return_data['phone_activated'] = True if (post_data['phone_activated'] == 'True') else False
+            return_data['sendEmail'] = True if (post_data['sendEmail'] == 'True') else False
+            return_data['sendSMS'] = True if (post_data['sendSMS'] == 'True') else False
         return return_data

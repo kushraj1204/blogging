@@ -32,7 +32,7 @@ h3 {
     border-radius: 12px;
     border-style: solid;
     margin: 15px;
-    padding: 5px;
+    padding: 20px;
     box-sizing: border-box;
 
 }
@@ -70,6 +70,10 @@ ul {
     list-style-type: none;
     padding: 5px;
     margin: 5px;
+}
+
+.breadcrumbstyle{
+    padding: 15px;
 }
 
 .topnews {

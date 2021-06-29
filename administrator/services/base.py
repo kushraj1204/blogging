@@ -13,6 +13,7 @@ class BaseService:
         session_data['full_name'] = exists['first_name'] + ' ' + exists['last_name']
         session_data['id'] = exists['id']
         session_data['profile_image'] = exists['profile_image']
+        session_data['is_superuser'] = exists['is_superuser']
         return {'data': session_data, 'message': 'Username and password matched'}
 
     def getPostData(self, post_data, errors):

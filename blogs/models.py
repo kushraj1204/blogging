@@ -86,6 +86,7 @@ class Blog(models.Model):
     title = models.CharField(max_length=200)
     alias = models.SlugField(unique=True, max_length=200)
     introtext = models.CharField(max_length=200, null=True, blank=True, verbose_name='Intro Text')
+    tags = models.CharField(max_length=200, null=True, blank=True, verbose_name='Tags')
     displayphoto = models.ImageField(upload_to='blog/static/blog', null=True, blank=True, verbose_name='Display Photo')
     research_data = TextField(default="Research Data")
     fulltext = TextField(null=True, blank=True, verbose_name='Full Text')
@@ -115,7 +116,7 @@ class Blog(models.Model):
     metakey = models.TextField(blank=True, null=True, verbose_name='Meta Key')
     metadesc = models.TextField(blank=True, null=True, verbose_name='Meta Description')
     hits = models.IntegerField(blank=True, default=0)
-    level = models.IntegerField(blank=True, null=True)
+    version = models.IntegerField(default=0)
     featured = models.BooleanField(default=False, null=True, blank=True)
 
     class Meta:
@@ -182,3 +183,4 @@ class Content(models.Model):
 
             append_number = int(appended_string)
             return alias + '-' + str(append_number + 1)
+

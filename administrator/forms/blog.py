@@ -8,4 +8,4 @@ class BlogForm(ModelForm):
         model = Blog
         exclude = ['displayphoto', 'alias', 'checked_out_by', 'checked_out_at', 'created_by', 'created_at',
                    'modified_by', 'modified_at', 'published_by', 'researched_by', 'authored_by', 'edited_by',
-                   'published_date', 'hits', 'level']
+                   'published_date', 'hits']

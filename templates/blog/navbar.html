@@ -11,16 +11,22 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-            <li class="nav-item {% if category_id == 0 %} active {% endif %}">
-                <a class="nav-link"  href="{% url 'home' %}">Home</a>
+            <li class="nav-item {% if not category_id %} active {% endif %}">
+                <a class="nav-link" href="{% url 'home' %}">Home</a>
 
             </li>
 
             {% for category in categories %}
                 <li class="nav-item {% if category.id == category_id %} active {% endif %}">
-                    <a class="nav-link"  href="{% url 'blogsByCategory' slug=category.alias  %}">{{ category.title }}</a>
+                    <a class="nav-link" href="{% url 'blogsByCategory' slug=category.alias %}">{{ category.title }}</a>
                 </li>
             {% endfor %}
         </ul>
+
+    <form class="form-inline" action="{% url "home" %}" method="GET">
+        <input class="form-control mr-sm-2" type="search" placeholder="Search" name="keyword"
+               value="{{ searchkeyword }}" aria-label="Search">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    </form>
     </div>
 </nav>

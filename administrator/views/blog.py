@@ -6,22 +6,23 @@ from administrator.forms import BlogForm
 from administrator.services import BlogService, CategoryService
 from administrator.views.base import BaseAdminView
 from django.contrib import messages
+from django.utils.text import slugify
+from django.utils import timezone
 import json
 
 from blogs.models import Blog
 
 
 class BlogView(BaseAdminView):
-
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs, session_menu='Blog', session_submenu='',
-                                permission_required=[])
-
     blog_service = BlogService()
     category_service = CategoryService()
 
     @classmethod
     def get_list(cls, request):
+        response = cls.pre_function(cls, request, session_menu='Blog', session_submenu='',
+                                    permissions_required=['blogs.view_blog'])
+        if not response['status']:
+            return response['action']
         keyword = request.GET.get('keyword')
         filter = {'keyword': keyword if keyword is not None else ""}
         if keyword is None:
@@ -37,14 +38,21 @@ class BlogView(BaseAdminView):
 
     @classmethod
     def add(cls, request):
+        response = cls.pre_function(cls, request, session_menu='Blog', session_submenu='',
+                                    permissions_required=['blogs.add_blog'])
+        if not response['status']:
+            return response['action']
         if request.method == 'POST':
             _post_data = request.POST
             post_data = _post_data.dict()
-            post_data = cls.get_filtered_input(post_data)
             blog = Blog()
+            loggedInUser = request.session.get('loggedInUser')['id']
+            post_data = cls.get_filtered_input(post_data, loggedInUser, blog)
             post_form = BlogForm(post_data, instance=blog)
             if post_form.is_valid():
-                status = cls.blog_service.saveBlog(post_data, loggedInuser=cls.loggedInUser)
+                status = cls.blog_service.saveBlog(post_data, blog=blog)
+                print(status)
+                print('result')
                 if status['success']:
                     messages.success(request, 'Success')
                     return redirect('adminBlogDetail', pk=status['id'])
@@ -75,6 +83,11 @@ class BlogView(BaseAdminView):
 
     @classmethod
     def delete(cls, request, pk):
+        response = cls.pre_function(cls, request, session_menu='Blog', session_submenu='',
+                                    permissions_required=['blogs.delete_blog'])
+        if not response['status']:
+            messages.error(request, 'You are unauthorized to complete this action')
+            return HttpResponse(json.dumps({'success': False}), content_type="application/json")
         _post_data = request.POST
         try:
             blog = get_object_or_404(Blog, pk=pk)
@@ -89,8 +102,13 @@ class BlogView(BaseAdminView):
             return HttpResponse(json.dumps({'success': False}), content_type="application/json")
 
     def get(self, request, pk):
+
         if not pk:
             return redirect('adminBlogAdd')
+        response = self.pre_function(request, session_menu='Blog', session_submenu='',
+                                     permissions_required=['blogs.view_blog'])
+        if not response['status']:
+            return response['action']
         blog = get_object_or_404(Blog, pk=pk)
         post_data = self.blog_service.getPostData(vars(blog), None)
         categories = self.category_service.get_categories(getRoot=False)
@@ -98,14 +116,28 @@ class BlogView(BaseAdminView):
                       {'postData': post_data, 'categories': categories})
 
     def post(self, request, pk):
+        response = self.pre_function(request, session_menu='Blog', session_submenu='',
+                                     permissions_required=['blogs.change_blog'])
+        if not response['status']:
+            return response['action']
         _post_data = request.POST
         post_data = _post_data.dict()
-        post_data = self.get_filtered_input(post_data)
-
+        loggedInUser = request.session.get('loggedInUser')['id']
         blog = get_object_or_404(Blog, pk=pk)
+        post_data = self.get_filtered_input(post_data, loggedInUser, blog)
+        if post_data['version'] != blog.version:
+            messages.error(request,
+                           'This article has been updated in the mean time. Proceed only if you want to override the newly saved article')
+            post_data['id'] = pk
+            post_data['version'] = blog.version
+            categories = self.category_service.get_categories(getRoot=False)
+            post_data = self.blog_service.getPostData(post_data, None)
+            return render(request, 'admin/blog/add_blog.html',
+                          {'postData': post_data, 'categories': categories})
+
         post_form = BlogForm(post_data, instance=blog)
         if post_form.is_valid():
-            status = self.blog_service.saveBlog(post_data, pk, self.loggedInUser)
+            status = self.blog_service.saveBlog(post_data, pk=pk, blog=blog)
             if status:
                 messages.success(request, 'Success')
                 return redirect('adminBlogDetail', pk=pk)
@@ -127,7 +159,7 @@ class BlogView(BaseAdminView):
                           {'postData': post_data, 'categories': categories})
 
     @staticmethod
-    def get_filtered_input(post_data):
+    def get_filtered_input(post_data, loggedInUser, blog):
         return_data = dict()
         return_data['title'] = post_data['title']
         return_data['introtext'] = post_data['introtext']
@@ -137,6 +169,34 @@ class BlogView(BaseAdminView):
         return_data['cat_id'] = int(post_data['cat_id'])
         return_data['metakey'] = post_data['metakey']
         return_data['metadesc'] = post_data['metadesc']
+        return_data['researched'] = True if (post_data['researched'] == 'True') else False
+        return_data['authored'] = True if (post_data['authored'] == 'True') else False
+        return_data['edited'] = True if (post_data['edited'] == 'True') else False
         return_data['published'] = True if (post_data['published'] == 'True') else False
+        return_data['version'] = int(post_data['version'])
+        if not blog.id:
+            return_data['version'] = 1
+        if return_data['researched'] and not blog.researched:
+            return_data['researched_by'] = loggedInUser
+        if return_data['authored'] and not blog.authored:
+            return_data['authored_by'] = loggedInUser
+        if return_data['edited'] and not blog.edited:
+            return_data['edited_by'] = loggedInUser
+        if return_data['published'] and not blog.published:
+            return_data['published_by'] = loggedInUser
+            return_data['published_date'] = timezone.now()
+        if not blog.id:
+            return_data['created_by'] = loggedInUser
         return_data['featured'] = True if (post_data['featured'] == 'True') else False
+        return_data['modified_by'] = loggedInUser
+
+        tags = post_data['tags']
+        return_data['tags'] = tags
+        if tags:
+            tags = tags.split(",")
+            for index, tag in enumerate(tags):
+                tag = tag.strip()
+                tag = slugify(tag.lower())
+                tags[index] = tag
+            return_data['tags'] = ','.join(tags)
         return return_data

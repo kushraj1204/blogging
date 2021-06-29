@@ -40,10 +40,16 @@ class UserService(BaseService):
             user_data['dob'] = timezone.now()
             pass
         if pk:
-            groups = user_data['groups']
-            user_permissions = user_data['user_permissions']
-            user_data.pop('user_permissions')
-            user_data.pop('groups')
+            update_groups=False
+            update_user_permissions=False
+            if "groups" in user_data:
+                groups = user_data['groups']
+                update_groups = True
+                user_data.pop('groups')
+            if "user_permissions" in user_data:
+                user_permissions = user_data['user_permissions']
+                update_user_permissions = True
+                user_data.pop('user_permissions')
             if "password" in user_data:
                 user_data['password'] = make_password(user_data['password'])
             try:
@@ -51,10 +57,12 @@ class UserService(BaseService):
                 status = CustomUser.objects.filter(pk=pk).update(**update_data)
                 if status:
                     saved_user = CustomUser.objects.get(pk=pk)
-                    saved_user.groups.clear()
-                    saved_user.user_permissions.clear()
-                    saved_user.groups.add(*groups)
-                    saved_user.user_permissions.add(*user_permissions)
+                    if update_groups:
+                        saved_user.groups.clear()
+                        saved_user.groups.add(*groups)
+                    if update_user_permissions:
+                        saved_user.user_permissions.clear()
+                        saved_user.user_permissions.add(*user_permissions)
                     return {'id': pk, 'success': True}
             except Exception as e:
                 print(e)
@@ -73,4 +81,3 @@ class UserService(BaseService):
                 print(e)
                 pass
         return {'id': pk if pk else 0, 'success': False}
-

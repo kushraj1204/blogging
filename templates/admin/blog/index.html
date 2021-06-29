@@ -54,6 +54,9 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Title</th>
+                                <th>Researched</th>
+                                <th>Authored</th>
+                                <th>Edited</th>
                                 <th>Published</th>
                                 <th>Action</th>
                             </tr>
@@ -70,14 +73,50 @@
 
                                         </td>
                                         <td>
-                                            {% if blog.published %}
+                                            {% if blog.researched %}
                                                 <span class="badge badge-success">
 
-                                                    Published
+                                                    True
                                         </span>
                                             {% else %}
                                                 <span class="badge badge-danger">
-                                            Not Published
+                                            False
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if blog.authored %}
+                                                <span class="badge badge-success">
+
+                                                    True
+                                        </span>
+                                            {% else %}
+                                                <span class="badge badge-danger">
+                                            False
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if blog.edited %}
+                                                <span class="badge badge-success">
+
+                                                    True
+                                        </span>
+                                            {% else %}
+                                                <span class="badge badge-danger">
+                                            False
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if blog.published %}
+                                                <span class="badge badge-success">
+
+                                                    True
+                                        </span>
+                                            {% else %}
+                                                <span class="badge badge-danger">
+                                            False
                                             </span>
                                             {% endif %}
                                         </td>

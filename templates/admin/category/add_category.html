@@ -159,9 +159,12 @@
 {% block styles %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap-duallistbox.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/duallist-plus.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'js/tags/tagsinput.css' %}">
 {% endblock %}
 {% block script %}
     <script src="{% static 'js/jquery.bootstrap-duallistbox.js' %}"></script>
+    <script src="{% static 'js/tags/tagsinput.js' %}"></script>
+
 
     <script>
 
@@ -201,8 +204,7 @@
                 var r = confirm("Are you sure you want to delete this content!");
                 if (r == true) {
                     let data = ($('#deleteForm').serializeArray());
-                    if ({{ postData.id.value }} == 0
-                )
+                    if ({{ postData.id.value }} == 0)
                     {
                         return
                     }

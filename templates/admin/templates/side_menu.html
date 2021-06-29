@@ -39,6 +39,7 @@
                     </a>
                 </li>
 
+                {% if request.session.loggedInUser.is_superuser %}
                 <li class="nav-item">
                     <a href="{% url 'adminUserList' %}"
                        class="nav-link {% if request.session.menu == 'User' %}active{% endif %}">
@@ -58,19 +59,21 @@
                         </p>
                     </a>
                 </li>
+
                 <li class="nav-item">
                     <a href="{% url 'adminContentList' %}"
                        class="nav-link {% if request.session.menu == 'Content' %}active{% endif %}">
-                        <i class="nav-icon fas fa-gear"></i>
+                        <i class="nav-icon fas fa-sticky-note"></i>
                         <p>
                             Content
                         </p>
                     </a>
                 </li>
+            {% endif %}
                 <li class="nav-item">
                     <a href="{% url 'adminCategoryList' %}"
                        class="nav-link {% if request.session.menu == 'Category' %}active{% endif %}">
-                        <i class="nav-icon fas fa-gear"></i>
+                        <i class="nav-icon fas fa-sitemap"></i>
                         <p>
                             Category
                         </p>
@@ -79,18 +82,18 @@
                 <li class="nav-item">
                     <a href="{% url 'adminBlogList' %}"
                        class="nav-link {% if request.session.menu == 'Blog' %}active{% endif %}">
-                        <i class="nav-icon fas fa-gear"></i>
+                        <i class="nav-icon fas fa-boxes"></i>
                         <p>
                             Blog
                         </p>
                     </a>
                 </li>
                 {% has_permission 'auth.add_permission,auth.change_permission' request.session.permissions as settings_allowed %}
-                {% if settings_allowed %}
+                {% if settings_allowed or request.session.loggedInUser.is_superuser %}
                     <li class="nav-item">
                         <a href="{% url 'adminSettings' %}"
                            class="nav-link {% if request.session.menu == 'Settings' %}active{% endif %}">
-                            <i class="nav-icon fas fa-gear"></i>
+                            <i class="nav-icon fas fa-cogs"></i>
                             <p>
                                 Settings
                             </p>

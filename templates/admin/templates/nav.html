@@ -45,7 +45,7 @@
             </form>
         </li>
         <li>
-            <a class="nav-link" href="#"><i
+            <a class="nav-link" href="{% url 'adminUserDetail' pk=request.session.loggedInUser.id %}"><i
                     class="fas fa-user-edit"></i></a>
         </li>
 

@@ -1,59 +1,123 @@
-from django.shortcuts import render
 from django.core.paginator import Paginator
-from django.utils.translation import gettext
-
-# Create your views here.
 from blogs.models import Category, Blog, Content
+from django.shortcuts import render, get_object_or_404
+from django.views.generic import View
+from datetime import datetime, timedelta
+from administrator.models import Settings
 
 
-def home(request):
-    categories = Category.objects.all().filter(level=2)
-    blogs = Blog.objects.all()[:10]
-    metakeywords = ""
-    metadescription = ""
-    context = {"test": gettext("Test"), "categories": categories, "category_id": 0, "page_obj": blogs,
-               "metadescription": metadescription,
-               "metakey": metakeywords}
-    return render(request, "blog/blogs.html", context)
+class SiteView(View):
+    settings = get_object_or_404(Settings, pk=1)
+    last_week = datetime.today() - timedelta(days=7)
+    categories = Category.objects.all().filter(level=2).filter(published=1)
+    explore_blogs = Blog.objects.all().filter(published=1, cat_id__published=1)[:settings.page_limit]
+    recommended = Blog.objects.all().filter(published=1, cat_id__published=1, published_date__gte=last_week).order_by(
+        'hits')[:settings.page_limit]
 
 
-def blogs_by_category(request, slug):
-    category = Category.objects.get(alias=slug)
-    blogs = Blog.objects.all().filter(cat_id=category.id).order_by('id')
-    paginator = Paginator(blogs, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    for article in page_obj:
-        if not (article.displayphoto):
-            article.displayphoto = 'blog/static/blog/Capture.jpg'
-    top_blogs = Blog.objects.all().filter(cat_id=category.id)[:5]
-    explore_blogs = Blog.objects.all()[:10]
-    categories = Category.objects.all().filter(level=2)
-    metakeywords = category.metakey
-    metadescription = category.metadesc
-    context = {"categories": categories, "blogs": blogs, "category_name": category.title, "category_id": category.id,
-               "topblogs": top_blogs,
-               "explore": explore_blogs, "page_obj": page_obj, "metadescription": metadescription,
-               "metakey": metakeywords}
-    return render(request, "blog/blogs.html", context)
+    @classmethod
+    def home(cls, request):
+        print(cls.settings.page_limit)
+        keyword = request.GET.get('keyword')
+        keyword = keyword if keyword is not None else ""
+        blogs = Blog.objects.all().filter(published=1, cat_id__published=1, title__icontains=keyword).order_by('id')
+        paginator = Paginator(blogs, cls.settings.page_limit)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        for article in page_obj:
+            if not (article.displayphoto):
+                article.displayphoto = 'blog/static/blog/Capture.jpg'
+        context = {"explore": cls.explore_blogs,
+                   "categories": cls.categories,
+                   "recommended": cls.recommended,
+                   "category_id": 0,
+                   "page_obj": page_obj,
+                   "metadescription": cls.settings.metadesc,
+                   "metakey": cls.settings.metakey,
+                   "searchkeyword": keyword,
+                   "pagetitle": "Home"}
+        return render(request, "blog/blogs.html", context)
 
+    @classmethod
+    def blogs_by_category(cls, request, slug):
+        category = Category.objects.filter(published=1).get(alias=slug)
+        blogs = Blog.objects.all().filter(cat_id__alias=slug, cat_id__published=1, published=1).order_by('id')
+        paginator = Paginator(blogs, cls.settings.page_limit)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        for article in page_obj:
+            if not (article.displayphoto):
+                article.displayphoto = 'blog/static/blog/Capture.jpg'
+        top_blogs = Blog.objects.all().filter(cat_id=category.id)[:5]
+        metakeywords = category.metakey
+        metadescription = category.metadesc
+        context = {"categories": cls.categories,
+                   "blogs": blogs,
+                   "category_name": category.title,
+                   "category_id": category.id,
+                   "category_slug": slug,
+                   "topblogs": top_blogs,
+                   "recommended": cls.recommended,
+                   "explore": cls.explore_blogs,
+                   "page_obj": page_obj,
+                   "metadescription": metadescription,
+                   "pagetitle": category.title,
+                   "metakey": metakeywords}
+        return render(request, "blog/blogs.html", context)
 
-def getBlog(request, slug):
-    categories = Category.objects.all().filter(level=2)
-    blog = Blog.objects.get(alias=slug)
-    metakeywords = blog.metakey
-    metadescription = blog.metadesc
-    context = {"categories": categories, "blog": blog, "category_id": blog.cat_id_id,
-               "metadescription": metadescription, "metakey": metakeywords}
-    return render(request, "blog/blog.html", context)
+    @classmethod
+    def blogs_by_tag(cls, request, slug):
 
+        blogs = Blog.objects.all().filter(cat_id__published=1, published=1, tags__contains=slug).order_by('id')
+        paginator = Paginator(blogs, cls.settings.page_limit)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        for article in page_obj:
+            if not (article.displayphoto):
+                article.displayphoto = 'blog/static/blog/Capture.jpg'
+        context = {"categories": cls.categories,
+                   "blogs": blogs,
+                   "category_name": slug,
+                   "category_slug": slug,
+                   "recommended": cls.recommended,
+                   "explore": cls.explore_blogs,
+                   "page_obj": page_obj,
+                   "metadescription": cls.settings.metadesc,
+                   "pagetitle": slug,
+                   "metakey": cls.settings.metakey}
+        return render(request, "blog/blogs.html", context)
 
-def getContent(request, slug):
-    categories = Category.objects.all().filter(level=2)
-    content = Content.objects.get(alias=slug)
-    metakeywords = content.metakey
-    metadescription = content.metadesc
-    context = {"categories": categories, "content": content,
-               "metadescription": metadescription, "metakey": metakeywords}
-    return render(request, "blog/content.html", context)
+    @classmethod
+    def getBlog(cls, request, slug):
+        blog = Blog.objects.filter(published=1, cat_id__published=1).get(alias=slug)
+        blog.hits = blog.hits + 1
+        blog.save()
+        if blog.tags:
+            blog.tags = blog.tags.split(",")
+        category_slug = blog.cat_id.alias
+        metakey = cls.settings.metakey
+        metakey = metakey if metakey else ''
+        metakey = slug if metakey == '' else metakey + ',' + slug
+        context = {"categories": cls.categories,
+                   "recommended": cls.recommended,
+                   "blog": blog,
+                   "category_slug": category_slug,
+                   "category_id": blog.cat_id_id,
+                   "explore": cls.explore_blogs,
+                   "metadescription": cls.settings.metadesc,
+                   "metakey": metakey,
+                   "pagetitle": blog.title
+                   }
+        return render(request, "blog/blog.html", context)
 
+    @classmethod
+    def getContent(cls, request, slug):
+        content = Content.objects.get(alias=slug)
+        context = {"categories": cls.categories,
+                   "recommended": cls.recommended,
+                   "content": content,
+                   "explore": cls.explore_blogs,
+                   "pagetitle": content.title,
+                   "metadescription": content.metadesc,
+                   "metakey": content.metakey}
+        return render(request, "blog/content.html", context)
