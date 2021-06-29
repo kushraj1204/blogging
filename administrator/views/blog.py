@@ -46,8 +46,9 @@ class BlogView(BaseAdminView):
             _post_data = request.POST
             post_data = _post_data.dict()
             blog = Blog()
-            loggedInUser = request.session.get('loggedInUser')['id']
-            post_data = cls.get_filtered_input(post_data, loggedInUser, blog)
+            loggedInUser = request.session.get('loggedInUser')
+            post_data = cls.get_filtered_input(post_data, loggedInUser, blog, permissions=cls.userpermissions,
+                                               groups=cls.groups)
             post_form = BlogForm(post_data, instance=blog)
             if post_form.is_valid():
                 status = cls.blog_service.saveBlog(post_data, blog=blog)
@@ -122,9 +123,10 @@ class BlogView(BaseAdminView):
             return response['action']
         _post_data = request.POST
         post_data = _post_data.dict()
-        loggedInUser = request.session.get('loggedInUser')['id']
+        loggedInUser = request.session.get('loggedInUser')
         blog = get_object_or_404(Blog, pk=pk)
-        post_data = self.get_filtered_input(post_data, loggedInUser, blog)
+        post_data = self.get_filtered_input(post_data, loggedInUser, blog, permissions=self.userpermissions,
+                                            groups=self.groups)
         if post_data['version'] != blog.version:
             messages.error(request,
                            'This article has been updated in the mean time. Proceed only if you want to override the newly saved article')
@@ -159,7 +161,8 @@ class BlogView(BaseAdminView):
                           {'postData': post_data, 'categories': categories})
 
     @staticmethod
-    def get_filtered_input(post_data, loggedInUser, blog):
+    def get_filtered_input(post_data, _loggedInUser, blog, groups=[], permissions={}):
+        loggedInUser = _loggedInUser['id']
         return_data = dict()
         return_data['title'] = post_data['title']
         return_data['introtext'] = post_data['introtext']
@@ -178,13 +181,25 @@ class BlogView(BaseAdminView):
             return_data['version'] = 1
         if return_data['researched'] and not blog.researched:
             return_data['researched_by'] = loggedInUser
+            if 2 not in groups and not _loggedInUser['is_superuser']:
+                return_data['researched_by'] = None
+                return_data['researched'] = False
         if return_data['authored'] and not blog.authored:
             return_data['authored_by'] = loggedInUser
+            if (3 not in groups and not _loggedInUser['is_superuser']) or not return_data['researched']:
+                return_data['authored_by'] = None
+                return_data['authored'] = False
         if return_data['edited'] and not blog.edited:
             return_data['edited_by'] = loggedInUser
-        if return_data['published'] and not blog.published:
+            if (4 not in groups and not _loggedInUser['is_superuser']) or not return_data['authored']:
+                return_data['edited_by'] = None
+                return_data['edited'] = False
+        if return_data['published'] and not blog.published or not _loggedInUser['is_superuser']:
             return_data['published_by'] = loggedInUser
             return_data['published_date'] = timezone.now()
+            if (5 not in groups and not _loggedInUser['is_superuser']) or not return_data['edited']:
+                return_data['published_by'] = None
+                return_data['published'] = False
         if not blog.id:
             return_data['created_by'] = loggedInUser
         return_data['featured'] = True if (post_data['featured'] == 'True') else False
@@ -199,4 +214,5 @@ class BlogView(BaseAdminView):
                 tag = slugify(tag.lower())
                 tags[index] = tag
             return_data['tags'] = ','.join(tags)
+        print(return_data)
         return return_data

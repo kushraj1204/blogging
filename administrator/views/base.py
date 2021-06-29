@@ -1,4 +1,4 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import View
 from django.contrib import messages
 
@@ -9,8 +9,9 @@ from administrator.services.auth import AuthService
 class BaseAdminView(View):
     loggedInUser = None
     userpermissions = []
+    groups = []
 
-    def pre_function(self, request, session_menu='', session_submenu='', permissions_required=[],set_messages=True):
+    def pre_function(self, request, session_menu='', session_submenu='', permissions_required=[], set_messages=True):
         request.session['menu'] = session_menu
         request.session['submenu'] = session_submenu
         permissions_required = set(permissions_required)
@@ -19,8 +20,13 @@ class BaseAdminView(View):
         else:
             self.loggedInUser = request.session.get('loggedInUser')
             id = self.loggedInUser['id']
-            user = CustomUser.objects.get(pk=id)
+            user = get_object_or_404(CustomUser, pk=id)
             permissions_access = user.get_all_permissions()
+            groups = list(user.groups.all())
+            group_ids = []
+            for group in groups:
+                group_ids.append(group.id)
+            self.groups = group_ids
             self.userpermissions = permissions_access
             if not user.is_superuser:
                 if not permissions_required.issubset(permissions_access):
