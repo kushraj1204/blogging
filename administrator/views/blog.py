@@ -52,8 +52,6 @@ class BlogView(BaseAdminView):
             post_form = BlogForm(post_data, instance=blog)
             if post_form.is_valid():
                 status = cls.blog_service.saveBlog(post_data, blog=blog)
-                print(status)
-                print('result')
                 if status['success']:
                     messages.success(request, 'Success')
                     return redirect('adminBlogDetail', pk=status['id'])
@@ -217,5 +215,4 @@ class BlogView(BaseAdminView):
                 tag = slugify(tag.lower())
                 tags[index] = tag
             return_data['tags'] = ','.join(tags)
-        print(return_data)
         return return_data

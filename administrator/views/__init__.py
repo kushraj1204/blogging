@@ -8,3 +8,4 @@ from .setting import SettingsView
 from .content import ContentView
 from .category import CategoryView
 from .blog import BlogView
+from .permissions import PermissionsView

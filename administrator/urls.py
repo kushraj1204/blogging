@@ -35,5 +35,8 @@ urlpatterns = [
     path('commonmedia/imageList', views.Images.getImageList, name='imageList'),
     path('settings', views.SettingsView.as_view(), name='adminSettings'),
 
+    path('permissions', views.PermissionsView.get_list, name='adminPermissions'),
+    path('permission/add', views.PermissionsView.as_view(), name='adminPermissionAdd'),
+
 ]
 # handler404 = views.BlogView.handleError

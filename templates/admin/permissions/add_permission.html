@@ -1,0 +1,132 @@
+{% extends "admin/admin_layout.html" %}
+{% load static %}
+{% load custom_tags %}
+{% block content %}
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+
+            Add Permission
+        </h1>
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6 pull-left">
+                    <div class="row breadcrumb ">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{% url "adminHome" %}">Home</a>
+                            </li>
+                            <li class="breadcrumb-item active">
+
+                                Add permission
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="row float-sm-right">
+                        <a href="{% url 'adminPermissions' %}" class="btn btn-default"><i
+                                class="fa fa-angle-left"></i> Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="help-block">
+        </div>
+
+        <form method="post" accept-charset="utf-8"
+              enctype="multipart/form-data">
+            <div class="row">
+                {% csrf_token %}
+                <div class="col-md-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">General</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse"
+                                        data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="first_name">Name</label>
+                                <input type="hidden" id="id" name="id" class="form-control"
+                                       value="{{ postData.id.value }}">
+                                <input type="text" id="name" name="name"
+                                       class="form-control {% if postData.name.error %}is-invalid{% endif %}"
+                                       value="{{ postData.name.value }}">
+                                {% if postData.name.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.name.error }}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+                            <div class="form-group">
+                                <label for="first_name">Code name</label>
+                                <input type="text" id="codename" name="codename"
+                                       class="form-control {% if postData.codename.error %}is-invalid{% endif %}"
+                                       value="{{ postData.codename.value }}">
+                                {% if postData.codename.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.codename.error }}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+                            <div class="form-group">
+                                <label for="parent">Model</label>
+
+                                <select class="custom-select {% if postData.content_type.error %}is-invalid{% endif %}"
+                                        name="content_type" id="content_type"
+                                >
+                                    {% for content_type in content_types %}
+                                        <option value="{{ content_type.id }}"
+                                        >{{ content_type.model }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if postData.content_type.error %}
+                                    <div class="invalid-feedback">
+                                        {{ postData.content_type.error }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+
+            </div>
+
+            <div class="pb-5">
+                <a href="{% url 'adminPermissions' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">Save
+                </button>
+
+            </div>
+        </form>
+
+    </section>
+    <!-- /.content -->
+{% endblock %}
+{% block styles %}
+
+{% endblock %}
+{% block script %}
+    <script src="{% static 'js/jquery.bootstrap-duallistbox.js' %}"></script>
+    <script>
+
+        $(document).ready(function () {
+
+        });
+
+
+    </script>
+{% endblock %}

@@ -11,7 +11,8 @@ class BaseAdminView(View):
     userpermissions = []
     groups = []
 
-    def pre_function(self, request, session_menu='', session_submenu='', permissions_required=[], set_messages=True):
+    def pre_function(self, request, session_menu='', session_submenu='', permissions_required=[], set_messages=True,
+                     must_be_superuser=False):
         request.session['menu'] = session_menu
         request.session['submenu'] = session_submenu
         permissions_required = set(permissions_required)
@@ -29,6 +30,10 @@ class BaseAdminView(View):
             self.groups = group_ids
             self.userpermissions = permissions_access
             if not user.is_superuser:
+                if must_be_superuser:
+                    if set_messages:
+                        messages.error(request, 'Not authorized')
+                    return {'status': False, 'message': 'unauthorized', 'action': redirect('adminHome')}
                 if not permissions_required.issubset(permissions_access):
                     if set_messages:
                         messages.error(request, 'Not authorized')
