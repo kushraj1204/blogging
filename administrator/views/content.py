@@ -15,8 +15,8 @@ class ContentView(BaseAdminView):
 
     @classmethod
     def get_list(cls, request):
-        response=cls.pre_function(cls,request, session_menu='Content', session_submenu='',
-                          permissions_required=['blogs.view_content'])
+        response = cls.pre_function(cls, request, session_menu='Content', session_submenu='',
+                                    permissions_required=['blogs.view_content'])
         if not response['status']:
             return response['action']
         keyword = request.GET.get('keyword')
@@ -34,8 +34,8 @@ class ContentView(BaseAdminView):
 
     @classmethod
     def add(cls, request):
-        response=cls.pre_function(cls, request, session_menu='Content', session_submenu='',
-                         permissions_required=['blogs.add_content'])
+        response = cls.pre_function(cls, request, session_menu='Content', session_submenu='',
+                                    permissions_required=['blogs.add_content'])
         if not response['status']:
             return response['action']
         if request.method == 'POST':
@@ -48,6 +48,9 @@ class ContentView(BaseAdminView):
             if post_form.is_valid():
                 status = post_form.save()
                 if status:
+                    cls.log_to_admin(cls, modelname='content', object_id=content.pk, object_repr=post_data['title'],
+                                     action_flag=1,
+                                     change_message=json.dumps([{'added': {}}]))
                     messages.success(request, 'Success')
                     return redirect('adminContentDetail', pk=content.pk)
                 else:
@@ -75,8 +78,8 @@ class ContentView(BaseAdminView):
 
     @classmethod
     def delete(cls, request, pk):
-        response=cls.pre_function(cls,request, session_menu='Content', session_submenu='',
-                          permissions_required=['blogs.delete_content'])
+        response = cls.pre_function(cls, request, session_menu='Content', session_submenu='',
+                                    permissions_required=['blogs.delete_content'])
         if not response['status']:
             messages.error(request, 'You are unauthorized to complete this action')
             return HttpResponse(json.dumps({'success': False}), content_type="application/json")
@@ -88,6 +91,8 @@ class ContentView(BaseAdminView):
         except:
             status = 0
         if status:
+            cls.log_to_admin(cls, modelname='content', object_id=pk, object_repr=content.__str__(), action_flag=3,
+                             change_message=json.dumps([{'deleted': {}}]))
             messages.success(request, 'Content Deleted Successfully')
             return HttpResponse(json.dumps({'success': True}), content_type="application/json")
         else:
@@ -97,8 +102,8 @@ class ContentView(BaseAdminView):
     def get(self, request, pk):
         if not pk:
             return redirect('adminContentAdd')
-        response=self.pre_function(request, session_menu='Content', session_submenu='',
-                          permissions_required=['blogs.view_content'])
+        response = self.pre_function(request, session_menu='Content', session_submenu='',
+                                     permissions_required=['blogs.view_content'])
         if not response['status']:
             return response['action']
         user_service = UserService()
@@ -109,8 +114,8 @@ class ContentView(BaseAdminView):
                       {'postData': post_data, })
 
     def post(self, request, pk):
-        response=self.pre_function(request, session_menu='Content', session_submenu='',
-                          permissions_required=['blogs.change_content'])
+        response = self.pre_function(request, session_menu='Content', session_submenu='',
+                                     permissions_required=['blogs.change_content'])
         if not response['status']:
             return response['action']
         _post_data = request.POST
@@ -122,6 +127,11 @@ class ContentView(BaseAdminView):
         if post_form.is_valid():
             status = post_form.save()
             if status:
+                changed_fields = self.getChangedFields(post_data, content)
+                if len(changed_fields) > 0:
+                    self.log_to_admin(modelname='content', object_id=pk, object_repr=content.__str__(), action_flag=2,
+                                      change_message=json.dumps([{'changed': {'fields': changed_fields}}]))
+
                 messages.success(request, 'Success')
                 return redirect('adminContentDetail', pk=pk)
             else:

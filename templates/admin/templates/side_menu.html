@@ -101,6 +101,18 @@
                     </li>
                 {% endif %}
 
+            {% if request.session.loggedInUser.is_superuser %}
+                    <li class="nav-item">
+                        <a href="{% url 'adminPermissions' %}"
+                           class="nav-link {% if request.session.menu == 'Permissions' %}active{% endif %}">
+                            <i class="nav-icon fas fa-universal-access"></i>
+                            <p>
+                                Permissions
+                            </p>
+                        </a>
+                    </li>
+                {% endif %}
+
 
             </ul>
         </nav>

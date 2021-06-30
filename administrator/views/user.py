@@ -40,7 +40,7 @@ class UserView(BaseAdminView):
             user_service = UserService()
             _post_data = request.POST
             post_data = _post_data.dict()
-            post_data = cls.get_filtered_input(post_data,request.session.get('loggedInUser'))
+            post_data = cls.get_filtered_input(post_data, request.session.get('loggedInUser'))
             if not post_data['phone']:
                 post_data.pop('phone')
 
@@ -50,6 +50,10 @@ class UserView(BaseAdminView):
             if post_form.is_valid():
                 status = user_service.saveUser(post_data, 0)
                 if status['success']:
+                    cls.log_to_admin(cls, modelname='customuser', object_id=status['id'],
+                                     object_repr=post_data['email'],
+                                     action_flag=1,
+                                     change_message=json.dumps([{'added': {}}]))
                     messages.success(request, 'Success')
                     return redirect('adminUserDetail', pk=status['id'])
                 else:
@@ -89,6 +93,8 @@ class UserView(BaseAdminView):
             except:
                 status = 0
             if status:
+                cls.log_to_admin(cls, modelname='customuser', object_id=pk, object_repr=user.__str__(), action_flag=3,
+                                 change_message=json.dumps([{'deleted': {}}]))
                 messages.success(request, 'User Deleted Successfully')
                 return HttpResponse(json.dumps({'success': True}), content_type="application/json")
             else:
@@ -129,7 +135,7 @@ class UserView(BaseAdminView):
         _post_data = request.POST
 
         post_data = _post_data.dict()
-        post_data = self.get_filtered_input(post_data,request.session.get('loggedInUser'))
+        post_data = self.get_filtered_input(post_data, request.session.get('loggedInUser'))
         if request.session.get('loggedInUser')['is_superuser']:
             user_permissions_input = _post_data.getlist('user_permissions')
             user_groups_input = _post_data.getlist('groups')
@@ -155,6 +161,10 @@ class UserView(BaseAdminView):
         if post_form.is_valid():
             status = user_service.saveUser(post_data, pk)
             if status['success']:
+                changed_fields = self.getChangedFields(post_data, user)
+                if len(changed_fields) > 0:
+                    self.log_to_admin(modelname='customuser', object_id=pk, object_repr=user.__str__(), action_flag=2,
+                                          change_message=json.dumps([{'changed': {'fields': changed_fields}}]))
                 messages.success(request, 'Success')
                 return redirect('adminUserDetail', pk=pk)
             else:
@@ -175,7 +185,7 @@ class UserView(BaseAdminView):
                            'user_permissions': user_permissions})
 
     @staticmethod
-    def get_filtered_input(post_data,loggedInUser):
+    def get_filtered_input(post_data, loggedInUser):
         return_data = dict()
         return_data['id'] = post_data['id']
         return_data['first_name'] = post_data['first_name']

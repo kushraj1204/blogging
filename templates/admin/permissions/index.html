@@ -53,7 +53,8 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
-
+                                <th>Code Name</th>
+                                <th>App | Model</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -62,7 +63,15 @@
                                     <tr>
                                         <td>{{ group.id }}</td>
                                         <td>
-                                                 {{ group.name }}
+                                            {{ group.name }}
+
+                                        </td>
+                                        <td>
+                                            {{ group.codename }}
+
+                                        </td>
+                                        <td>
+                                            {{ group.content_type }}
 
                                         </td>
                                     </tr>

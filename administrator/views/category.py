@@ -43,13 +43,17 @@ class CategoryView(BaseAdminView):
         if request.method == 'POST':
             _post_data = request.POST
             post_data = _post_data.dict()
-            print(post_data)
             post_data.pop('csrfmiddlewaretoken')
+            if not bool({'publish_category'} & cls.userpermissions) and not cls.loggedInUser['is_superuser']:
+                post_data.pop('published')
             category = Category()
             post_form = CategoryForm(post_data, instance=category)
             if post_form.is_valid():
                 status = post_form.save()
                 if status:
+                    cls.log_to_admin(cls, modelname='category', object_id=category.pk, object_repr=post_data['title'],
+                                     action_flag=1,
+                                     change_message=json.dumps([{'added': {}}]))
                     messages.success(request, 'Success')
                     return redirect('adminCategoryDetail', pk=category.pk)
                 else:
@@ -66,7 +70,6 @@ class CategoryView(BaseAdminView):
                 errors = json.loads(post_form.errors.as_json())  # errors to json and then to dict
                 post_data = cls.category_service.getPostData(post_data, errors)
                 parents = cls.category_service.get_categories(new=True)
-                print(post_data)
                 return render(request, 'admin/category/add_category.html',
                               {'postData': post_data, 'parents': parents})
 
@@ -96,6 +99,9 @@ class CategoryView(BaseAdminView):
         except:
             status = 0
         if status:
+            cls.log_to_admin(cls, modelname='category', object_id=pk, object_repr=category.__str__(), action_flag=3,
+                             change_message=json.dumps([{'deleted': {}}]))
+
             messages.success(request, 'Category Deleted Successfully')
             return HttpResponse(json.dumps({'success': True}), content_type="application/json")
         else:
@@ -113,7 +119,6 @@ class CategoryView(BaseAdminView):
         category = get_object_or_404(Category, pk=pk)
         post_data = self.category_service.getPostData(vars(category), None)
         parents = self.category_service.get_categories()
-        print(parents)
         return render(request, 'admin/category/add_category.html',
                       {'postData': post_data, 'parents': parents})
 
@@ -122,11 +127,17 @@ class CategoryView(BaseAdminView):
                                      permissions_required=['blogs.change_category'])
         if not response['status']:
             return response['action']
+
         _post_data = request.POST
         post_data = _post_data.dict()
         post_data.pop('csrfmiddlewaretoken')
+        if not bool({'publish_category'} & self.userpermissions) and not self.loggedInUser['is_superuser']:
+            post_data.pop('published')
         category = get_object_or_404(Category, pk=pk)
-        if pk == 1:  # special case for root category edit
+        if category.published and not {'blogs.publish_category'}.issubset(self.userpermissions):
+            messages.error(request, 'Not authorized')
+            return redirect('adminHome')
+        if pk == 1:  # special case for root category edit only meta change allowed
             category.metakey = request.POST.get('metakey')
             category.metadesc = request.POST.get('metadesc')
             status = category.save()
@@ -134,7 +145,7 @@ class CategoryView(BaseAdminView):
                 messages.success(request, 'Success')
                 return redirect('adminCategoryDetail', pk=pk)
             else:
-                messages.error(request, 'Error occurred while saving category.py')
+                messages.error(request, 'Error occurred while saving category')
                 post_data['id'] = pk
                 post_data = self.category_service.getPostData(post_data, None)
                 parents = self.category_service.get_categories()
@@ -146,6 +157,12 @@ class CategoryView(BaseAdminView):
 
             status = post_form.save()
             if status:
+                changed_fields = self.getChangedFields(post_data, category)
+                if len(changed_fields) > 0:
+                    self.log_to_admin(modelname='category', object_id=pk, object_repr=category.__str__(),
+                                      action_flag=2,
+                                      change_message=json.dumps([{'changed': {'fields': changed_fields}}]))
+
                 messages.success(request, 'Success')
                 return redirect('adminCategoryDetail', pk=pk)
             else:

@@ -4,10 +4,10 @@ from django.utils import timezone
 import datetime
 import pytz
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.models import Group
 from Users.models import CustomUser
 from datetime import date
 
+from administrator.email import EmailThread
 from administrator.services.base import BaseService
 
 
@@ -40,8 +40,8 @@ class UserService(BaseService):
             user_data['dob'] = timezone.now()
             pass
         if pk:
-            update_groups=False
-            update_user_permissions=False
+            update_groups = False
+            update_user_permissions = False
             if "groups" in user_data:
                 groups = user_data['groups']
                 update_groups = True
@@ -76,8 +76,16 @@ class UserService(BaseService):
                 user.password = make_password(user.password)
                 status = user.save()
                 if status:
+                    self.send_activation_email(user)
+
                     return {'id': user.pk, 'success': True}
             except Exception as e:
                 print(e)
                 pass
         return {'id': pk if pk else 0, 'success': False}
+
+    def send_activation_email(self, user):
+        #any formattings here
+        EmailThread(subject="Account activation email", message="Click here to activate your email",
+                    email_from="info@kushblogs.com",
+                    email_to=[user.email]).start()

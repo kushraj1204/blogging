@@ -8,14 +8,19 @@ from django.conf import settings
 from django.http import HttpResponse
 import json
 
+from administrator.email import EmailThread
 from administrator.views.base import BaseAdminView
 from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import send_mail
 
 
 class Images(BaseAdminView):
 
-
     def post(self, request):
+        EmailThread(subject="Subject", message="You just tried to upload an image didnt you", email_from="info@kushblogs.com",
+                    email_to=["kushraj1204@gmail.com"]).start()
+
+
         imagetype = request.POST.get('imagetype')
         print(imagetype)
         if imagetype not in ["userimages", "common_media"]:
@@ -28,7 +33,7 @@ class Images(BaseAdminView):
             ext = split_up[-1]
             rand_filename = self.random_string_generator()
             unique_filename = rand_filename + str(int(time.time())) + ext
-            if imagetype=="userimages":
+            if imagetype == "userimages":
                 subfolder = '\\images\\' + imagetype + '\\' + str(datetime.date.today()) + '\\'
             if imagetype == "common_media":
                 subfolder = '\\' + imagetype + '\\'

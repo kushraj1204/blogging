@@ -36,6 +36,11 @@ class SettingsView(BaseAdminView):
         if post_form.is_valid():
             status = post_form.save()
             if status:
+                changed_fields = self.getChangedFields(post_data, settings)
+                if len(changed_fields) > 0:
+                    self.log_to_admin(modelname='settings', object_id=pk, object_repr=settings.__str__(), action_flag=2,
+                                      change_message=json.dumps([{'changed': {'fields': changed_fields}}]))
+
                 messages.success(request, 'Success')
                 return redirect('adminSettings')
             else:

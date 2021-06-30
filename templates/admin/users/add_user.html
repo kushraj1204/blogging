@@ -124,8 +124,7 @@
                                 <label for="address">Address</label>
                                 <input class="form-control {% if postData.address.error %}is-invalid{% endif %} {% if postData.address.error %}is-invalid{% endif %}"
                                        name="address" type="address"
-                                       value="
-                                               {% if postData.address.value != None %}{{ postData.address.value }}{% endif %}"
+                                       value="{% if postData.address.value != None %}{{ postData.address.value }}{% endif %}"
                                        id="address">
 
                                 {% if postData.address.error %}

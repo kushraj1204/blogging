@@ -28,7 +28,7 @@ class BlogView(BaseAdminView):
         if keyword is None:
             keyword = ''
         blogs = Blog.objects.all().filter(
-            Q(title__icontains=keyword)).order_by('published','edited','authored','researched','-id')
+            Q(title__icontains=keyword)).order_by('published', 'edited', 'authored', 'researched', '-id')
         paginator = Paginator(blogs, 10)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
@@ -48,11 +48,14 @@ class BlogView(BaseAdminView):
             blog = Blog()
             loggedInUser = request.session.get('loggedInUser')
             post_data = cls.get_filtered_input(post_data, loggedInUser, blog, permissions=cls.userpermissions,
-                                               groups=cls.groups)
+                                               )
             post_form = BlogForm(post_data, instance=blog)
             if post_form.is_valid():
                 status = cls.blog_service.saveBlog(post_data, blog=blog)
                 if status['success']:
+                    cls.log_to_admin(cls, modelname='blog', object_id=status['id'], object_repr=post_data['email'],
+                                     action_flag=1,
+                                     change_message=json.dumps([{'added': {}}]))
                     messages.success(request, 'Success')
                     return redirect('adminBlogDetail', pk=status['id'])
                 else:
@@ -94,6 +97,8 @@ class BlogView(BaseAdminView):
         except:
             status = 0
         if status:
+            cls.log_to_admin(cls, modelname='blog', object_id=pk, object_repr=blog.__str__(), action_flag=3,
+                             change_message=json.dumps([{'deleted': {}}]))
             messages.success(request, 'Blog Deleted Successfully')
             return HttpResponse(json.dumps({'success': True}), content_type="application/json")
         else:
@@ -123,8 +128,11 @@ class BlogView(BaseAdminView):
         post_data = _post_data.dict()
         loggedInUser = request.session.get('loggedInUser')
         blog = get_object_or_404(Blog, pk=pk)
+        if blog.published and not {'blogs.publish_blog'}.issubset(self.userpermissions):
+            messages.error(request, 'Not authorized')
+            return redirect('adminHome')
         post_data = self.get_filtered_input(post_data, loggedInUser, blog, permissions=self.userpermissions,
-                                            groups=self.groups)
+                                            )
         if post_data['version'] != blog.version:
             messages.error(request,
                            'This article has been updated in the mean time. Proceed only if you want to override the newly saved article')
@@ -139,6 +147,11 @@ class BlogView(BaseAdminView):
         if post_form.is_valid():
             status = self.blog_service.saveBlog(post_data, pk=pk, blog=blog)
             if status:
+                changed_fields = self.getChangedFields(post_data, blog)
+                if len(changed_fields) > 0:
+                    self.log_to_admin(modelname='blog', object_id=pk, object_repr=blog.__str__(), action_flag=2,
+                                      change_message=json.dumps([{'changed': {'fields': changed_fields}}]))
+
                 messages.success(request, 'Success')
                 return redirect('adminBlogDetail', pk=pk)
             else:
@@ -159,7 +172,7 @@ class BlogView(BaseAdminView):
                           {'postData': post_data, 'categories': categories})
 
     @staticmethod
-    def get_filtered_input(post_data, _loggedInUser, blog, groups=[], permissions={}):
+    def get_filtered_input(post_data, _loggedInUser, blog, permissions={}):
         loggedInUser = _loggedInUser['id']
         return_data = dict()
         return_data['title'] = post_data['title']
@@ -170,38 +183,55 @@ class BlogView(BaseAdminView):
         return_data['cat_id'] = int(post_data['cat_id'])
         return_data['metakey'] = post_data['metakey']
         return_data['metadesc'] = post_data['metadesc']
-        return_data['researched'] = True if (post_data['researched'] == 'True') else False
-        return_data['authored'] = True if (post_data['authored'] == 'True') else False
-        return_data['edited'] = True if (post_data['edited'] == 'True') else False
-        return_data['published'] = True if (post_data['published'] == 'True') else False
         return_data['version'] = int(post_data['version'])
         if not blog.id:
             return_data['version'] = 1
-        if return_data['researched'] and not blog.researched:
-            return_data['researched_by_id'] = loggedInUser
-            if 2 not in groups and not _loggedInUser['is_superuser']:
-                return_data['researched_by_id'] = None
-                return_data['researched'] = False
-        if return_data['authored'] and not blog.authored:
-            return_data['authored_by_id'] = loggedInUser
-            if (3 not in groups and not _loggedInUser['is_superuser']) or not return_data['researched']:
-                return_data['authored_by_id'] = None
+
+        print(permissions)
+        print({'blogs.research_blog'}.issubset(permissions))
+        if {'blogs.research_blog'}.issubset(permissions) or _loggedInUser['is_superuser']:
+            return_data['researched'] = True if (post_data['researched'] == 'True') else False
+            if return_data['researched'] and not blog.researched:
+                return_data['researched_by_id'] = loggedInUser
+
+        if {'blogs.author_blog'}.issubset(permissions) or _loggedInUser['is_superuser']:
+            return_data['authored'] = True if (post_data['authored'] == 'True') else False
+            if return_data['authored'] and not blog.authored:
+                return_data['authored_by_id'] = loggedInUser
+            if not return_data['researched']:
                 return_data['authored'] = False
-        if return_data['edited'] and not blog.edited:
-            return_data['edited_by_id'] = loggedInUser
-            if (4 not in groups and not _loggedInUser['is_superuser']) or not return_data['authored']:
-                return_data['edited_by_id'] = None
+                if "authored_by_id" in return_data:
+                    return_data.pop('authored_by_id')
+
+        if {'blogs.edit_blog'}.issubset(permissions) or _loggedInUser['is_superuser']:
+            return_data['edited'] = True if (post_data['edited'] == 'True') else False
+            if return_data['edited'] and not blog.edited:
+                return_data['edited_by_id'] = loggedInUser
+            if not return_data['authored']:
                 return_data['edited'] = False
-        if return_data['published'] and not blog.published or not _loggedInUser['is_superuser']:
-            return_data['published_by_id'] = loggedInUser
-            return_data['published_date'] = timezone.now()
-            if (5 not in groups and not _loggedInUser['is_superuser']) or not return_data['edited']:
-                return_data['published_by_id'] = None
+                if "edited_by_id" in return_data:
+                    return_data.pop('edited_by_id')
+
+        if {'blogs.publish_blog'}.issubset(permissions) or _loggedInUser['is_superuser']:
+            return_data['published'] = True if (post_data['published'] == 'True') else False
+            if return_data['published'] and not blog.published:
+                return_data['published_by_id'] = loggedInUser
+                return_data['published_date'] = timezone.now()
+            if not return_data['edited']:
                 return_data['published'] = False
+                if "published_by_id" in return_data:
+                    return_data.pop('published_by_id')
+
+        # if (not {'author_blog'}.issubset(permissions) and not _loggedInUser['is_superuser']) or not return_data[
+        #     'researched']:
+        #     return_data.pop('authored')
+        #     if "authored_by_id" in return_data:
+        #         return_data.pop('authored_by_id')
+
         if not blog.id:
             return_data['created_by_id'] = loggedInUser
-
-        if not bool(set([3, 4, 5]) & set(groups)) and not _loggedInUser['is_superuser']:
+        if not bool({'blogs.publish_blog', 'blogs.edit_blog', 'blogs.author_blog'} & permissions) and not _loggedInUser[
+            'is_superuser']:
             return_data.pop('fulltext')
 
         return_data['featured'] = True if (post_data['featured'] == 'True') else False

@@ -14,7 +14,8 @@ class GroupView(BaseAdminView):
 
     @classmethod
     def get_list(cls, request):
-        response=cls.pre_function(cls,request, session_menu='Group', session_submenu='', permissions_required=['auth.view_group'])
+        response = cls.pre_function(cls, request, session_menu='Group', session_submenu='',
+                                    permissions_required=['auth.view_group'])
         if not response['status']:
             return response['action']
         keyword = request.GET.get('keyword')
@@ -32,7 +33,8 @@ class GroupView(BaseAdminView):
 
     @classmethod
     def add(cls, request):
-        response=cls.pre_function(cls,request, session_menu='Group', session_submenu='', permissions_required=['auth.add_group'])
+        response = cls.pre_function(cls, request, session_menu='Group', session_submenu='',
+                                    permissions_required=['auth.add_group'])
         if not response['status']:
             return response['action']
         if request.method == 'POST':
@@ -45,6 +47,9 @@ class GroupView(BaseAdminView):
             if post_form.is_valid():
                 status = post_form.save()
                 if status:
+                    cls.log_to_admin(cls, modelname='group', object_id=group.pk, object_repr=post_data['title'],
+                                     action_flag=1,
+                                     change_message=json.dumps([{'added': {}}]))
                     messages.success(request, 'Success')
                     return redirect('adminGroupDetail', pk=group.pk)
                 else:
@@ -72,7 +77,8 @@ class GroupView(BaseAdminView):
 
     @classmethod
     def delete(cls, request, pk):
-        response=cls.pre_function(cls,request, session_menu='Group', session_submenu='', permissions_required=['auth.delete_group'])
+        response = cls.pre_function(cls, request, session_menu='Group', session_submenu='',
+                                    permissions_required=['auth.delete_group'])
         if not response['status']:
             messages.error(request, 'You are unauthorized to complete this action')
             return HttpResponse(json.dumps({'success': False}), content_type="application/json")
@@ -85,6 +91,9 @@ class GroupView(BaseAdminView):
             except:
                 status = 0
             if status:
+                cls.log_to_admin(cls, modelname='group', object_id=pk, object_repr=group.__str__(), action_flag=3,
+                                 change_message=json.dumps([{'deleted': {}}]))
+
                 messages.success(request, 'Group Deleted Successfully')
                 return HttpResponse(json.dumps({'success': True}), content_type="application/json")
             else:
@@ -94,7 +103,8 @@ class GroupView(BaseAdminView):
             return redirect('adminGroupDetail', pk=pk)
 
     def get(self, request, pk):
-        response=self.pre_function(request, session_menu='Group', session_submenu='', permissions_required=['auth.view_group'])
+        response = self.pre_function(request, session_menu='Group', session_submenu='',
+                                     permissions_required=['auth.view_group'])
         if not response['status']:
             return response['action']
         if not pk:
@@ -110,7 +120,8 @@ class GroupView(BaseAdminView):
                       {'postData': post_data, 'permissions': permissions})
 
     def post(self, request, pk):
-        response=self.pre_function(request, session_menu='Group', session_submenu='', permissions_required=['auth.change_group'])
+        response = self.pre_function(request, session_menu='Group', session_submenu='',
+                                     permissions_required=['auth.change_group'])
         if not response['status']:
             return response['action']
         _post_data = request.POST
@@ -134,6 +145,11 @@ class GroupView(BaseAdminView):
             status = post_form.save()
 
             if status:
+                changed_fields = self.getChangedFields(post_data, group)
+                if len(changed_fields) > 0:
+                    self.log_to_admin(modelname='group', object_id=pk, object_repr=group.__str__(), action_flag=2,
+                                      change_message=json.dumps([{'changed': {'fields': changed_fields}}]))
+
                 messages.success(request, 'Success')
                 return redirect('adminGroupDetail', pk=pk)
             else:

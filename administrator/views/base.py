@@ -5,11 +5,12 @@ from django.contrib import messages
 from Users.models import CustomUser
 from administrator.services.auth import AuthService
 
+from administrator.utils import LoggingThread
+
 
 class BaseAdminView(View):
     loggedInUser = None
     userpermissions = []
-    groups = []
 
     def pre_function(self, request, session_menu='', session_submenu='', permissions_required=[], set_messages=True,
                      must_be_superuser=False):
@@ -23,11 +24,6 @@ class BaseAdminView(View):
             id = self.loggedInUser['id']
             user = get_object_or_404(CustomUser, pk=id)
             permissions_access = user.get_all_permissions()
-            groups = list(user.groups.all())
-            group_ids = []
-            for group in groups:
-                group_ids.append(group.id)
-            self.groups = group_ids
             self.userpermissions = permissions_access
             if not user.is_superuser:
                 if must_be_superuser:
@@ -50,3 +46,23 @@ class BaseAdminView(View):
                 request.session['loggedInUser'] = return_data['data']
                 request.session['permissions'] = list(permissions_access)
         return {'status': True, 'message': 'Success'}
+
+    def log_to_admin(self, modelname='logentry', object_id=1, object_repr='Object',
+                     action_flag=2,
+                     change_message='change'):
+        LoggingThread(user_id=self.loggedInUser['id'], modelname=modelname, object_id=object_id,
+                      object_repr=object_repr,
+                      action_flag=action_flag,
+                      change_message=change_message).start()
+
+    @staticmethod
+    def getChangedFields(post_data, object):
+        object_list = vars(object)
+        changed_fields = []
+        for datakey, eachdata in post_data.items():
+            if datakey in object_list:
+                if type(post_data[datakey]) is bool:
+                    post_data[datakey] = int(post_data[datakey] == 'True')
+                if str(post_data[datakey]).strip() != str(object_list[datakey]).strip():
+                    changed_fields.append(datakey)
+        return changed_fields
