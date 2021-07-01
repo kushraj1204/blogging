@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import View
 from datetime import datetime, timedelta
 from administrator.models import Settings
+from blogs.utils import getImages
 
 
 class SiteView(View):
@@ -14,7 +15,6 @@ class SiteView(View):
     recommended = Blog.objects.all().filter(published=1, cat_id__published=1, published_date__gte=last_week).order_by(
         'hits')[:settings.page_limit]
 
-
     @classmethod
     def home(cls, request):
         print(cls.settings.page_limit)
@@ -24,9 +24,8 @@ class SiteView(View):
         paginator = Paginator(blogs, cls.settings.page_limit)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-        for article in page_obj:
-            if not (article.displayphoto):
-                article.displayphoto = 'blog/static/blog/Capture.jpg'
+        for blog in page_obj:
+            blog.displayphoto_options = getImages(str(blog.displayphoto))
         context = {"explore": cls.explore_blogs,
                    "categories": cls.categories,
                    "recommended": cls.recommended,
@@ -45,9 +44,8 @@ class SiteView(View):
         paginator = Paginator(blogs, cls.settings.page_limit)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-        for article in page_obj:
-            if not (article.displayphoto):
-                article.displayphoto = 'blog/static/blog/Capture.jpg'
+        for blog in page_obj:
+            blog.displayphoto_options = getImages(str(blog.displayphoto))
         top_blogs = Blog.objects.all().filter(cat_id=category.id)[:5]
         metakeywords = category.metakey
         metadescription = category.metadesc
@@ -72,9 +70,9 @@ class SiteView(View):
         paginator = Paginator(blogs, cls.settings.page_limit)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-        for article in page_obj:
-            if not (article.displayphoto):
-                article.displayphoto = 'blog/static/blog/Capture.jpg'
+        for blog in page_obj:
+            blog.displayphoto_options = getImages(str(blog.displayphoto))
+
         context = {"categories": cls.categories,
                    "blogs": blogs,
                    "category_name": slug,
@@ -92,6 +90,8 @@ class SiteView(View):
         blog = Blog.objects.filter(published=1, cat_id__published=1).get(alias=slug)
         blog.hits = blog.hits + 1
         blog.save()
+        displayphoto_options = getImages(str(blog.displayphoto))
+        blog.displayphoto_options = displayphoto_options
         if blog.tags:
             blog.tags = blog.tags.split(",")
         category_slug = blog.cat_id.alias

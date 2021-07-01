@@ -347,7 +347,7 @@
                     $(".imageuploadspinner").show();
                     fd.append('file', files[0]);
                     fd.append('csrfmiddlewaretoken', '{{csrf_token}}');
-                    fd.append('imagetype', 'common_media');
+                    fd.append('imagetype', 'blogimages');
                     $.ajax({
                         url: '{% url 'imageUpload' %}',
                         type: 'post',

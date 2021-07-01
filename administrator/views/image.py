@@ -3,7 +3,7 @@ import time, datetime
 import traceback
 import string
 import random
-
+from PIL import Image
 from django.conf import settings
 from django.http import HttpResponse
 import json
@@ -17,13 +17,8 @@ from django.core.mail import send_mail
 class Images(BaseAdminView):
 
     def post(self, request):
-        EmailThread(subject="Subject", message="You just tried to upload an image didnt you", email_from="info@kushblogs.com",
-                    email_to=["kushraj1204@gmail.com"]).start()
-
-
         imagetype = request.POST.get('imagetype')
-        print(imagetype)
-        if imagetype not in ["userimages", "common_media"]:
+        if imagetype not in ["userimages", "common_media", "blogimages"]:
             return HttpResponse(
                 json.dumps({'result': False, 'message': 'There was an error in uploading file', 'data': None}),
                 content_type="application/json")
@@ -33,14 +28,14 @@ class Images(BaseAdminView):
             ext = split_up[-1]
             rand_filename = self.random_string_generator()
             unique_filename = rand_filename + str(int(time.time())) + ext
-            if imagetype == "userimages":
-                subfolder = '\\images\\' + imagetype + '\\' + str(datetime.date.today()) + '\\'
+            subfolder = '\\images\\' + imagetype + '\\'
             if imagetype == "common_media":
                 subfolder = '\\' + imagetype + '\\'
             if not os.path.exists(settings.MEDIA_ROOT + subfolder):
                 os.makedirs(settings.MEDIA_ROOT + subfolder)
             saved_path = subfolder + unique_filename
             full_filename = os.path.join(settings.MEDIA_ROOT + saved_path)
+
             for key, file in request.FILES.items():
                 dest = open(full_filename, 'wb')
                 if file.multiple_chunks:
@@ -49,6 +44,8 @@ class Images(BaseAdminView):
                 else:
                     dest.write(file.read())
                 dest.close()
+            if imagetype != 'common_media':
+                self.generate_sizes(subfolder, unique_filename)
             return HttpResponse(json.dumps({'result': True,
                                             'data': {'filename': uploaded_filename, 'saved_filename': saved_path,
                                                      'message': None}}), content_type="application/json")
@@ -87,3 +84,39 @@ class Images(BaseAdminView):
         return HttpResponse(
             json.dumps(response),
             content_type="application/json")
+
+    @staticmethod
+    def generate_sizes(subfolder, unique_filename):
+        # here ill use predefined dimension sizes for ease
+        saved_path = subfolder + unique_filename
+        full_filename = os.path.join(settings.MEDIA_ROOT + saved_path)
+        subfolderlarge = subfolder + 'large\\'
+        subfoldermedium = subfolder + 'medium\\'
+        subfolderthumb = subfolder + 'thumb\\'
+        if not os.path.exists(settings.MEDIA_ROOT + subfolderlarge):
+            os.makedirs(settings.MEDIA_ROOT + subfolderlarge)
+        if not os.path.exists(settings.MEDIA_ROOT + subfoldermedium):
+            os.makedirs(settings.MEDIA_ROOT + subfoldermedium)
+        if not os.path.exists(settings.MEDIA_ROOT + subfolderthumb):
+            os.makedirs(settings.MEDIA_ROOT + subfolderthumb)
+
+        sizes = [{'path': subfolderlarge, 'maxsize': 800}, {'path': subfoldermedium, 'maxsize': 400},
+                 {'path': subfolderthumb, 'maxsize': 100}]
+        try:
+            img = Image.open(full_filename)
+            width, height = img.size
+            aspect_ratio = width / height
+            for size in sizes:
+                newimg = img
+                if width > size['maxsize'] or height > size['maxsize']:
+                    if width >= height:
+                        newheight = size['maxsize']
+                        newwidth = newheight * aspect_ratio
+                    else:
+                        newwidth = size['maxsize']
+                        newheight = newwidth / aspect_ratio
+                    if (newwidth * newheight) < (width * height):  # we dont want a bigger size after compressing
+                        newimg = img.resize((round(newwidth), round(newheight)))
+                newimg.save(os.path.join(settings.MEDIA_ROOT + size['path'] + unique_filename))
+        except Exception as e:
+            print(e)

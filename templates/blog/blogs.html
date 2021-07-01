@@ -26,13 +26,9 @@
                             <div class="articlelist">
                                 <a class="nav-link"
                                    href="{% url 'getBlog' slug=blog.alias %}">
-                                    {% if blog.displayphoto %}
-                                        <img class="imglist" width="1000" height="400"
-                                             src="{{ blog.displayphoto.url }}">
-                                    {% else %}
-                                        <img class="imglist" width="1000" height="400"
-                                             src="{% static 'media/static/blog/images.png' %}">
-                                    {% endif %}
+                                    <img class="imglist" width="1000" height="400"
+                                         src="{{ MEDIA_URL }}{{ blog.displayphoto_options.medium }}">
+
                                     {#                                        <img class="imglist" src="{{ blog.displayphoto.url }}">#}
                                     <h3>{{ blog.title }}</h3>
                                     <div class="content articleIntroText">{{ blog.introtext }}</div>
