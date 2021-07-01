@@ -87,7 +87,10 @@ class SiteView(View):
 
     @classmethod
     def getBlog(cls, request, slug):
-        blog = Blog.objects.filter(published=1, cat_id__published=1).get(alias=slug)
+        try:
+            blog = Blog.objects.filter(published=1, cat_id__published=1).get(alias=slug)
+        except:
+            pass
         blog.hits = blog.hits + 1
         blog.save()
         displayphoto_options = getImages(str(blog.displayphoto))
@@ -121,3 +124,20 @@ class SiteView(View):
                    "metadescription": content.metadesc,
                    "metakey": content.metakey}
         return render(request, "blog/content.html", context)
+
+
+# def handler404(request):
+#     return render(request, "blog/blog.html", {})
+#
+#
+# def handler403(request):
+#     return render(request, "blog/blog.html", {})
+
+def error_404(request, exception):
+    data = {}
+    return render(request, 'blog/blog.html', data)
+
+
+def error_403(request, exception):
+    data = {}
+    return render(request, 'blog/blog.html', data)

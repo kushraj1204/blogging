@@ -28,11 +28,11 @@ class BaseAdminView(View):
             if not user.is_superuser:
                 if must_be_superuser:
                     if set_messages:
-                        messages.error(request, 'Not authorized')
+                        messages.error(request, 'Access Forbidden')
                     return {'status': False, 'message': 'unauthorized', 'action': redirect('adminHome')}
                 if not permissions_required.issubset(permissions_access):
                     if set_messages:
-                        messages.error(request, 'Not authorized')
+                        messages.error(request, 'Access Forbidden')
                     return {'status': False, 'message': 'unauthorized', 'action': redirect('adminHome')}
             user = vars(user)
             auth_service = AuthService()

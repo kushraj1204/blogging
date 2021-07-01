@@ -1,2 +1,6 @@
 *.pyc
 media
+static
+venv
+.idea
+*.cpython-38.pyc

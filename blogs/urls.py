@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+
+
 urlpatterns = [
     path("", views.SiteView.home, name="home"),
     path("category/<slug:slug>", views.SiteView.blogs_by_category, name="blogsByCategory"),

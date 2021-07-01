@@ -23,7 +23,15 @@ class Images(BaseAdminView):
                 json.dumps({'result': False, 'message': 'There was an error in uploading file', 'data': None}),
                 content_type="application/json")
         try:
-            uploaded_filename = request.FILES['file'].name
+            f = request.FILES['file']
+            f.seek(0, 2)
+            file_length = (f.tell()) / (1024 * 1024)
+            if file_length > 5:
+                return HttpResponse(
+                    json.dumps(
+                        {'result': False, 'message': 'File too large. Select at most of 5 MB file', 'data': None}),
+                    content_type="application/json")
+            uploaded_filename = f.name
             split_up = os.path.splitext(uploaded_filename)
             ext = split_up[-1]
             rand_filename = self.random_string_generator()
@@ -44,8 +52,8 @@ class Images(BaseAdminView):
                 else:
                     dest.write(file.read())
                 dest.close()
-            if imagetype != 'common_media':
-                self.generate_sizes(subfolder, unique_filename)
+
+            self.generate_sizes(subfolder, unique_filename, thumbonly=True if imagetype == 'common_media' else False)
             return HttpResponse(json.dumps({'result': True,
                                             'data': {'filename': uploaded_filename, 'saved_filename': saved_path,
                                                      'message': None}}), content_type="application/json")
@@ -73,7 +81,8 @@ class Images(BaseAdminView):
                     continue
                 each_image = {"src": os.path.join("http://" + str(site) + settings.MEDIA_URL + "common_media/" + f),
                               'title': f}
-                response.append("common_media/" + f)
+                # response.append("common_media/" + f)
+                response.append(str(f))
                 imgs.append(each_image)
         except:
             pass
@@ -86,22 +95,24 @@ class Images(BaseAdminView):
             content_type="application/json")
 
     @staticmethod
-    def generate_sizes(subfolder, unique_filename):
+    def generate_sizes(subfolder, unique_filename, thumbonly=False):
         # here ill use predefined dimension sizes for ease
         saved_path = subfolder + unique_filename
         full_filename = os.path.join(settings.MEDIA_ROOT + saved_path)
-        subfolderlarge = subfolder + 'large\\'
-        subfoldermedium = subfolder + 'medium\\'
+        if not thumbonly:
+            subfolderlarge = subfolder + 'large\\'
+            subfoldermedium = subfolder + 'medium\\'
+            if not os.path.exists(settings.MEDIA_ROOT + subfolderlarge):
+                os.makedirs(settings.MEDIA_ROOT + subfolderlarge)
+            if not os.path.exists(settings.MEDIA_ROOT + subfoldermedium):
+                os.makedirs(settings.MEDIA_ROOT + subfoldermedium)
         subfolderthumb = subfolder + 'thumb\\'
-        if not os.path.exists(settings.MEDIA_ROOT + subfolderlarge):
-            os.makedirs(settings.MEDIA_ROOT + subfolderlarge)
-        if not os.path.exists(settings.MEDIA_ROOT + subfoldermedium):
-            os.makedirs(settings.MEDIA_ROOT + subfoldermedium)
         if not os.path.exists(settings.MEDIA_ROOT + subfolderthumb):
             os.makedirs(settings.MEDIA_ROOT + subfolderthumb)
 
-        sizes = [{'path': subfolderlarge, 'maxsize': 800}, {'path': subfoldermedium, 'maxsize': 400},
-                 {'path': subfolderthumb, 'maxsize': 100}]
+        sizes = [{'path': subfolderthumb, 'maxsize': 100}]
+        if not thumbonly:
+            sizes.append({'path': subfolderlarge, 'maxsize': 800}, {'path': subfoldermedium, 'maxsize': 400})
         try:
             img = Image.open(full_filename)
             width, height = img.size

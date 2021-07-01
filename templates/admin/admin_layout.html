@@ -63,23 +63,24 @@
                 });
             }
         });
-        $summernote=$('.wysiwyg').summernote({
+        $summernote = $('.wysiwyg').summernote({
             tabsize: 2,
             height: 500,
             toolbar: [
                 ['insert', ['picture', 'link', 'video', 'table', 'hr', 'imageList']],
                 ['font style', ['fontname', 'fontsize', 'color', 'bold', 'italic',
-                 'underline', 'strikethrough', 'superscript', 'subscript', 'clear']],
+                    'underline', 'strikethrough', 'superscript', 'subscript', 'clear']],
                 ['paragraph style', ['style', 'ol', 'ul', 'paragraph', 'height']],
                 ['misc', ['fullscreen', 'codeview', 'undo', 'redo', 'help']],
             ],
             dialogsInBody: true,
             imageList: {
-                icon: 'gear',
+                contents: '<i class="fa fa-file"/>',
                 endpoint: "{% url 'imageList' %}",
-                fullUrlPrefix: "{{ MEDIA_URL }}",
-                thumbUrlPrefix: "{{ MEDIA_URL }}"
+                fullUrlPrefix: "{{ MEDIA_URL }}/common_media/",
+                thumbUrlPrefix: "{{ MEDIA_URL }}/common_media/thumb/"
             },
+
             callbacks: {
                 onImageUpload: function (files) {
                     console.log('here')
@@ -89,12 +90,11 @@
             },
 
         });
+        $("button[data-original-title='Image List']").html('<i class="fa fa-file"></i>');
     });
 
-    function sendFile($summernote,file) {
-        console.log(file)
-        console.log('here')
 
+    function sendFile($summernote, file) {
         data = new FormData();
         data.append("file", file);
         data.append('csrfmiddlewaretoken', '{{csrf_token}}');
@@ -108,13 +108,13 @@
             processData: false,
             success: function (response) {
                 if (response.result) {
-                    var data={{ MEDIA_URL }}+response.data.saved_filename;
-                     $summernote.summernote('insertImage', data, function ($image) {
+                    var data = {{ MEDIA_URL }}+response.data.saved_filename;
+                    $summernote.summernote('insertImage', data, function ($image) {
                         $image.attr('src', data);
                     });
-;
+                    ;
                 } else {
-                    alert('Image upload failed.Please try again')
+                    alert(response.message)
                 }
 
             },
