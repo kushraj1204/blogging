@@ -1,6 +1,15 @@
-*.pyc
 media
 static
 venv
 .idea
-*.cpython-38.pyc
+*.log
+
+*.pot
+
+*.pyc
+
+*/*/*/__pycache__/
+
+*/*/__pycache__/
+
+*/__pycache__/
