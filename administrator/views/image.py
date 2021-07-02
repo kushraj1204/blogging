@@ -112,7 +112,8 @@ class Images(BaseAdminView):
 
         sizes = [{'path': subfolderthumb, 'maxsize': 100}]
         if not thumbonly:
-            sizes.append({'path': subfolderlarge, 'maxsize': 800}, {'path': subfoldermedium, 'maxsize': 400})
+            sizes.append({'path': subfolderlarge, 'maxsize': 800})
+            sizes.append({'path': subfoldermedium, 'maxsize': 400})
         try:
             img = Image.open(full_filename)
             width, height = img.size
