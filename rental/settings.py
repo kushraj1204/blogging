@@ -110,7 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 # settings table
-GOOGLE_MAPS_API_KEY = 'AIzaSyDuC9rUqDbSltDGuGmzJ-NBZ0pfeU6rh7o'
+GOOGLE_MAPS_API_KEY = '*********************************'
 
 LANGUAGE_CODE = 'en-us'
 
